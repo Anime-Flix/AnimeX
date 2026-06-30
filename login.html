@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <script>!function(){var h=location.hostname;var b=(h==="localhost"||h==="127.0.0.1")?"/":"/AnimeX/";document.write("<base href=\""+b+"\">")}()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesión — AnimeX</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    .password-strength {
+      height: 3px;
+      background: var(--c-surface3);
+      border-radius: var(--r-full);
+      margin-top: var(--sp-2);
+      overflow: hidden;
+    }
+    .password-strength-bar {
+      height: 100%;
+      border-radius: var(--r-full);
+      transition: width 0.4s ease, background 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="auth-bg"></div>
+
+<!-- Noise texture overlay -->
+<div style="position:fixed;inset:0;z-index:0;opacity:0.025;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/></filter><rect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22/></svg>');pointer-events:none;"></div>
+
+<!-- Main -->
+<main class="auth-page">
+  <div class="card-glass auth-card anim-scale-in">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-mark">X</div>
+      <span class="auth-logo-name">AnimeX</span>
+    </div>
+
+    <h1 class="auth-title">Bienvenido de vuelta</h1>
+    <p class="auth-subtitle">Inicia sesión para continuar tu aventura</p>
+
+    <!-- Form -->
+    <form class="auth-form stagger" id="login-form" novalidate>
+
+      <div class="input-group">
+        <label class="input-label" for="email">Correo electrónico</label>
+        <div class="input-wrap">
+          <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input type="email" id="email" class="input-field" placeholder="tu@correo.com" autocomplete="email" required />
+        </div>
+        <span class="input-error" id="email-error"></span>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="password">Contraseña</label>
+        <div class="input-wrap">
+          <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          <input type="password" id="password" class="input-field" placeholder="••••••••" autocomplete="current-password" required />
+          <button type="button" class="input-toggle" id="toggle-pass" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24" width="18" height="18" id="eye-icon">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <span class="input-error" id="pass-error"></span>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;">
+        <a href="#" class="auth-link text-sm" id="forgot-link">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-full" id="login-btn">
+        <span class="btn-text">Iniciar Sesión</span>
+      </button>
+
+    </form>
+
+    <div class="divider" style="margin-top:var(--sp-6)">o</div>
+
+    <p class="auth-footer" style="margin-top:var(--sp-4)">
+      ¿No tienes cuenta?
+      <a href="register.html" class="auth-link">Regístrate aquí</a>
+    </p>
+
+  </div>
+</main>
+
+<!-- Forgot password modal -->
+<div class="overlay" id="forgot-modal">
+  <div class="card-glass anim-scale-in" style="width:100%;max-width:400px;padding:var(--sp-8);">
+    <h2 style="font-family:var(--font-display);font-size:1.375rem;font-weight:700;margin-bottom:var(--sp-2);">Recuperar contraseña</h2>
+    <p class="text-muted text-sm" style="margin-bottom:var(--sp-6);">Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.</p>
+    <div class="input-group" style="margin-bottom:var(--sp-4);">
+      <div class="input-wrap">
+        <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <input type="email" id="reset-email" class="input-field" placeholder="tu@correo.com" />
+      </div>
+    </div>
+    <div style="display:flex;gap:var(--sp-3);">
+      <button class="btn btn-secondary btn-full" id="cancel-reset">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="send-reset">
+        <span class="btn-text">Enviar enlace</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { loginUser, resetPassword, onAuthChange } from './assets/js/core/auth.js';
+import { showToast } from './assets/js/components/toast.js';
+
+// Si ya está logueado, redirigir — pero solo una vez para evitar loops
+let redirected = false;
+onAuthChange(async (user) => {
+  if (!user || redirected) return;
+  try {
+    const { getCurrentUserData } = await import('./assets/js/core/auth.js');
+    const data = await getCurrentUserData();
+    if (!data) return; // usuario en Firebase Auth pero sin doc en Firestore — dejar en login
+
+    redirected = true;
+    if (data.role === 'admin' && data.status === 'active') {
+      window.location.href = 'admin/index.html';
+    } else if (data.status === 'active') {
+      window.location.href = 'index.html';
+    } else {
+      window.location.href = 'activate.html';
+    }
+  } catch(e) {
+    console.warn('Auth redirect error:', e.message);
+    // No redirigir si hay error — dejar al usuario en login
+  }
+});
+
+const form    = document.getElementById('login-form');
+const emailEl = document.getElementById('email');
+const passEl  = document.getElementById('password');
+const btn     = document.getElementById('login-btn');
+
+// Toggle password visibility
+document.getElementById('toggle-pass').addEventListener('click', () => {
+  const isText = passEl.type === 'text';
+  passEl.type = isText ? 'password' : 'text';
+  document.getElementById('eye-icon').innerHTML = isText
+    ? `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`
+    : `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+});
+
+// Validate field
+function validateField(el, errorId, msg) {
+  const errEl = document.getElementById(errorId);
+  if (!el.value.trim()) {
+    el.classList.add('error');
+    errEl.textContent = msg;
+    return false;
+  }
+  el.classList.remove('error');
+  errEl.textContent = '';
+  return true;
+}
+
+// Submit
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const v1 = validateField(emailEl, 'email-error', 'Ingresa tu email');
+  const v2 = validateField(passEl, 'pass-error', 'Ingresa tu contraseña');
+  if (!v1 || !v2) return;
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    const data = await loginUser(emailEl.value.trim(), passEl.value);
+
+    if (data.status === 'pending') {
+      showToast('Cuenta pendiente de activación', 'warning');
+      setTimeout(() => window.location.href = 'activate.html', 1200);
+    } else if (data.role === 'admin') {
+      showToast('Bienvenido, Administrador', 'success');
+      setTimeout(() => window.location.href = 'admin/index.html', 1000);
+    } else if (data.status === 'active') {
+      showToast('¡Bienvenido de vuelta!', 'success');
+      setTimeout(() => window.location.href = 'index.html', 1000);
+    } else {
+      showToast('Cuenta suspendida. Contacta soporte.', 'error');
+    }
+  } catch (err) {
+    const msgs = {
+      'auth/user-not-found': 'No existe una cuenta con ese email',
+      'auth/wrong-password': 'Contraseña incorrecta',
+      'auth/invalid-credential': 'Email o contraseña incorrectos',
+      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.',
+      'auth/invalid-email': 'Email inválido',
+    };
+    showToast(msgs[err.code] || 'Error al iniciar sesión', 'error');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+// Forgot password
+const forgotModal = document.getElementById('forgot-modal');
+document.getElementById('forgot-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  forgotModal.classList.add('open');
+  document.getElementById('reset-email').value = emailEl.value;
+});
+
+document.getElementById('cancel-reset').addEventListener('click', () => {
+  forgotModal.classList.remove('open');
+});
+
+forgotModal.addEventListener('click', (e) => {
+  if (e.target === forgotModal) forgotModal.classList.remove('open');
+});
+
+document.getElementById('send-reset').addEventListener('click', async () => {
+  const resetBtn = document.getElementById('send-reset');
+  const email = document.getElementById('reset-email').value.trim();
+  if (!email) { showToast('Ingresa tu email', 'warning'); return; }
+
+  resetBtn.classList.add('loading');
+  resetBtn.disabled = true;
+  try {
+    await resetPassword(email);
+    showToast('Enlace enviado. Revisa tu correo.', 'success');
+    forgotModal.classList.remove('open');
+  } catch {
+    showToast('No se pudo enviar el enlace', 'error');
+  } finally {
+    resetBtn.classList.remove('loading');
+    resetBtn.disabled = false;
+  }
+});
+
+// Clear errors on input
+[emailEl, passEl].forEach(el => {
+  el.addEventListener('input', () => el.classList.remove('error'));
+});
+</script>
+</body>
+</html>

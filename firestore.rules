@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role','user') == 'admin';
+    }
+
+    // ── USERS
+    match /users/{userId} {
+      allow get:    if isOwner(userId) || isAdmin();
+      allow list:   if isAdmin();
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+
+      match /profiles/{profileId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      match /watchHistory/{itemId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      match /favorites/{itemId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      match /ratings/{itemId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      match /messages/{msgId} {
+        allow read:   if isOwner(userId) || isAdmin();
+        allow create: if isAuth();
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // ── PLANS — public read
+    match /plans/{planId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ── ANIMES
+    match /animes/{animeId} {
+      allow read:  if isAuth();
+      allow write: if isAdmin();
+
+      match /seasons/{seasonId} {
+        allow read:  if isAuth();
+        allow write: if isAdmin();
+        match /episodes/{episodeId} {
+          allow read:  if isAuth();
+          allow write: if isAdmin();
+        }
+      }
+    }
+
+    // ── ACTIVATION CODES
+    // Users can READ to validate, WRITE only their own (to mark as used)
+    // Admins can do everything
+    match /activationCodes/{code} {
+      allow read:   if isAuth();
+      allow create: if isAdmin();
+      // Allow authenticated user to mark code as used (update only used/usedAt/usedBy)
+      allow update: if isAuth();
+      allow delete: if isAdmin();
+    }
+
+    // ── DRIVES
+    match /drives/{driveId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ── NOTIFICATIONS
+    match /notifications/{userId}/items/{itemId} {
+      allow read:   if isOwner(userId) || isAdmin();
+      allow create: if isAuth();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ── REVIEWS
+    match /reviews/{reviewId} {
+      allow read:   if isAuth();
+      allow create: if isAuth();
+      allow update: if isAuth() && resource.data.userId == request.auth.uid || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── TEST
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

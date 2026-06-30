@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <script>!function(){var h=location.hostname;var b=(h==="localhost"||h==="127.0.0.1")?"/":"/AnimeX/";document.write("<base href=\""+b+"\">")}()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnimeX — Streaming de Anime</title>
+  <meta name="description" content="La plataforma de streaming de anime más completa. Mira tus animes favoritos en HD y 4K." />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="stylesheet" href="assets/css/home.css" />
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+
+<!-- ── Page Loader ── -->
+<div class="page-loader" id="page-loader">
+  <div class="loader-logo">AnimeX</div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar"></div>
+  </div>
+</div>
+
+<!-- ── Profile Selector (shown if multiple profiles) ── -->
+<div class="profile-selector-overlay" id="profile-selector" style="display:none;">
+  <h1 class="profile-selector-title">¿Quién está viendo?</h1>
+  <div class="profile-selector-grid" id="profiles-grid"></div>
+</div>
+
+<!-- ── Navbar ── -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-brand">
+    <div class="navbar-logo-mark">X</div>
+    <span class="navbar-logo-name">AnimeX</span>
+  </div>
+
+  <div class="navbar-nav">
+    <a class="nav-link active" href="index.html">Inicio</a>
+    <a class="nav-link" href="#" id="browse-link">Explorar</a>
+    <a class="nav-link" href="#" id="mylist-link">Mi lista</a>
+  </div>
+
+  <div class="navbar-right">
+    <!-- Search -->
+    <div class="navbar-search" id="navbar-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Buscar anime..." id="search-input" autocomplete="off" />
+    </div>
+
+    <!-- Notifications -->
+    <button class="notif-btn" id="notif-btn">
+      <svg viewBox="0 0 24 24" width="18" height="18">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      <div class="notif-dot" id="notif-dot"></div>
+    </button>
+
+    <!-- Profile -->
+    <div style="position:relative;">
+      <div class="profile-btn" id="profile-btn">
+        <span id="profile-name-nav" style="font-size:.8125rem;font-weight:600;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+        <div class="profile-avatar" id="nav-avatar">?</div>
+        <svg viewBox="0 0 24 24" width="14" height="14" style="color:var(--c-text-3)"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+
+      <div class="profile-dropdown" id="profile-dropdown">
+        <div class="dropdown-item" id="switch-profile-btn">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>
+          Cambiar perfil
+        </div>
+        <a href="cuenta.html" class="dropdown-item">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mi cuenta
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="activate.html" class="dropdown-item" style="color:var(--c-warning)">
+          <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Activar / Plan
+        </a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" id="logout-btn" style="color:var(--c-error)">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <button class="btn btn-ghost btn-icon mobile-menu-btn" id="mobile-menu-btn">
+      <svg viewBox="0 0 24 24" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- Search results panel -->
+<div class="search-results" id="search-results">
+  <p class="text-muted text-sm" style="margin-bottom:var(--sp-4);">Resultados de búsqueda</p>
+  <div class="search-results-grid" id="search-results-grid"></div>
+</div>
+
+<!-- ── Hero ── -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <img class="hero-bg-img" id="hero-img" src="" alt="Hero" loading="eager" />
+    <div class="hero-gradient"></div>
+  </div>
+
+  <div class="hero-content anim-slide-up">
+    <div class="hero-badge" id="hero-badge">
+      <span>🔥</span> Tendencia ahora
+    </div>
+    <h1 class="hero-title" id="hero-title">Cargando...</h1>
+    <div class="hero-meta" id="hero-meta"></div>
+    <p class="hero-desc" id="hero-desc">Cargando descripción...</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary btn-lg" id="hero-play-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Ver ahora</span>
+      </button>
+      <button class="btn btn-ghost btn-lg" id="hero-info-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Más info</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dots -->
+  <div class="hero-dots" id="hero-dots"></div>
+</section>
+
+<!-- ── Main Content ── -->
+<main class="main-content" id="main-content">
+
+  <!-- Genre filters -->
+  <div class="genre-filters" id="genre-filters">
+    <button class="genre-chip active" data-genre="all">Todo</button>
+  </div>
+
+  <!-- Dynamic carousels injected here -->
+  <div id="carousels-container"></div>
+
+  <!-- Empty state (when no content) -->
+  <div id="empty-state" style="display:none;text-align:center;padding:var(--sp-16) var(--sp-8);">
+    <div style="font-size:4rem;margin-bottom:var(--sp-6);">🎌</div>
+    <h2 class="display-md" style="margin-bottom:var(--sp-3);">Sin contenido aún</h2>
+    <p class="text-muted" style="margin-bottom:var(--sp-6);">El administrador aún no ha agregado anime al catálogo. Vuelve pronto.</p>
+  </div>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-brand">AnimeX</div>
+  <div class="footer-links">
+    <a href="#" class="footer-link">Términos</a>
+    <a href="#" class="footer-link">Privacidad</a>
+    <a href="#" class="footer-link">Soporte</a>
+    <a href="#" class="footer-link">Contacto</a>
+  </div>
+  <p class="footer-copy">© 2025 AnimeX. Todos los derechos reservados.</p>
+</footer>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { onAuthChange, getCurrentUserData, logoutUser } from './assets/js/core/auth.js';
+import { getAnimes, getTrending, getNewReleases, getAllGenres, getAllYears, getAllStudios } from './assets/js/services/animeService.js';
+import { getContinueWatching, getProfiles, getActiveProfile } from './assets/js/services/userService.js';
+import { getRecommendations } from './assets/js/services/recommendService.js';
+import { createCarousel } from './assets/js/components/carousel.js';
+import { showToast } from './assets/js/components/toast.js';
+
+let allAnimes = [];
+let heroAnimes = [];
+let currentHeroIdx = 0;
+let heroInterval = null;
+let activeProfile = null;
+
+// ── Auth guard
+onAuthChange(async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  const data = await getCurrentUserData();
+  if (!data) { window.location.href = 'login.html'; return; }
+
+  if (data.status !== 'active') {
+    showToast('Tu cuenta no está activa aún', 'warning');
+    setTimeout(() => window.location.href = 'activate.html', 1500);
+    return;
+  }
+
+  // Admin redirect
+  if (data.role === 'admin') {
+    const goAdmin = confirm('Tienes rol de administrador. ¿Ir al panel admin?');
+    if (goAdmin) { window.location.href = 'admin/index.html'; return; }
+  }
+
+  // Check profiles
+  let profiles = [];
+  try {
+    profiles = await getProfiles();
+  } catch (e) {
+    console.warn('No se pudieron cargar perfiles:', e.message);
+  }
+
+  const savedProfile = localStorage.getItem('animex_profile');
+
+  // Si hay múltiples perfiles y ninguno guardado → mostrar selector
+  if (profiles.length > 1 && !savedProfile) {
+    showProfileSelector(profiles);
+    return;
+  }
+
+  // Buscar perfil guardado, o usar el primero, o crear uno temporal
+  let profile = profiles.find(p => p.id === savedProfile) || profiles[0] || null;
+
+  // Si no existe ningún perfil todavía (ej: nuevo usuario) usar fallback
+  if (!profile) {
+    profile = {
+      id: 'default',
+      name: data.email?.split('@')[0] || 'Usuario',
+      color: 'var(--c-accent)',
+    };
+  }
+
+  setActiveProfile(profile);
+  await initPage(data);
+});
+
+function setActiveProfile(profile) {
+  if (!profile) return;
+  activeProfile = profile;
+  if (profile.id) localStorage.setItem('animex_profile', profile.id);
+
+  const initial = (profile.name || 'U')[0].toUpperCase();
+  document.getElementById('nav-avatar').textContent = initial;
+  document.getElementById('nav-avatar').style.background = profile.color || 'var(--c-accent)';
+  document.getElementById('profile-name-nav').textContent = profile.name || 'Usuario';
+}
+
+function showProfileSelector(profiles) {
+  const overlay = document.getElementById('profile-selector');
+  const grid    = document.getElementById('profiles-grid');
+  overlay.style.display = 'flex';
+
+  grid.innerHTML = profiles.map(p => `
+    <div class="profile-option" data-id="${p.id}">
+      <div class="profile-option-avatar" style="background:${p.color || 'var(--c-accent)'}">
+        ${(p.name || 'U')[0].toUpperCase()}
+      </div>
+      <span class="profile-option-name">${p.name}</span>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.profile-option').forEach(el => {
+    el.addEventListener('click', async () => {
+      const id = el.dataset.id;
+      const profile = profiles.find(p => p.id === id);
+      setActiveProfile(profile);
+      overlay.style.display = 'none';
+      const data = await getCurrentUserData();
+      await initPage(data);
+    });
+  });
+}
+
+async function initPage(userData) {
+  let animes = [], trending = [], newReleases = [], continueList = [], recommendations = [], genres = [];
+  try {
+    [animes, trending, newReleases, continueList, recommendations, genres] = await Promise.all([
+      getAnimes(),
+      getTrending(8),
+      getNewReleases(8),
+      getContinueWatching(10).catch(() => []),
+      getRecommendations(10).catch(() => []),
+      getAllGenres(),
+    ]);
+  } catch(e) {
+    console.warn('Error cargando datos:', e.message);
+    hideLoader();
+    showToast('Error cargando contenido. Verifica las reglas de Firestore.', 'error');
+    return;
+  }
+
+  allAnimes = animes;
+  hideLoader();
+
+  if (!animes.length) {
+    document.getElementById('empty-state').style.display = '';
+    document.getElementById('hero').style.display = 'none';
+    return;
+  }
+
+  // Hero
+  heroAnimes = trending.slice(0, 5);
+  initHero(heroAnimes);
+
+  // Genre filters
+  initGenreFilters(genres);
+
+  // Carousels
+  const container = document.getElementById('carousels-container');
+
+  const sections = [
+    { title: '▶ Continuar viendo',    list: continueList,    progress: true },
+    { title: '🔥 Tendencias',          list: trending },
+    { title: '✨ Recomendados para ti', list: recommendations },
+    { title: '🆕 Nuevos lanzamientos', list: newReleases },
+  ];
+
+  if (animes.length) {
+    const genres_unique = [...new Set(animes.flatMap(a => a.genres || []))];
+    for (const genre of genres_unique.slice(0, 4)) {
+      const byGenre = animes.filter(a => (a.genres || []).includes(genre)).slice(0, 10);
+      if (byGenre.length >= 3) sections.push({ title: `🎭 ${genre}`, list: byGenre });
+    }
+  }
+
+  sections.forEach(({ title, list, progress }) => {
+    if (!list || !list.length) return;
+    const carousel = createCarousel({
+      title,
+      animes: list,
+      showProgress: !!progress,
+      onCardClick: (anime) => goToAnime(anime),
+    });
+    if (carousel) container.appendChild(carousel);
+  });
+}
+
+// ── Hero
+function initHero(animes) {
+  if (!animes.length) return;
+
+  // Dots
+  const dotsEl = document.getElementById('hero-dots');
+  dotsEl.innerHTML = animes.map((_, i) =>
+    `<button class="hero-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></button>`
+  ).join('');
+
+  dotsEl.querySelectorAll('.hero-dot').forEach(d => {
+    d.addEventListener('click', () => setHero(parseInt(d.dataset.idx)));
+  });
+
+  setHero(0);
+  heroInterval = setInterval(() => setHero((currentHeroIdx + 1) % animes.length), 6000);
+}
+
+function setHero(idx) {
+  const anime = heroAnimes[idx];
+  if (!anime) return;
+  currentHeroIdx = idx;
+
+  const img = document.getElementById('hero-img');
+  img.classList.remove('loaded');
+  img.src = anime.banner || anime.cover || `https://picsum.photos/seed/${anime.id}/1920/1080`;
+  img.onload = () => img.classList.add('loaded');
+
+  document.getElementById('hero-title').textContent = anime.title;
+  document.getElementById('hero-desc').textContent = anime.synopsis || '';
+
+  const meta = document.getElementById('hero-meta');
+  meta.innerHTML = [
+    anime.year ? `<span class="hero-meta-item">📅 ${anime.year}</span>` : '',
+    anime.studio ? `<span class="hero-meta-item">🎬 ${anime.studio}</span>` : '',
+    anime.rating ? `<span class="hero-meta-item">⭐ ${anime.rating.toFixed(1)}</span>` : '',
+    anime.genres?.length ? `<span class="hero-meta-item">${anime.genres.slice(0,2).join(' · ')}</span>` : '',
+  ].join('');
+
+  // Dots
+  document.querySelectorAll('.hero-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+
+  document.getElementById('hero-play-btn').onclick = () => goToAnime(anime);
+  document.getElementById('hero-info-btn').onclick = () => goToAnime(anime);
+}
+
+// ── Genre filters
+function initGenreFilters(genres) {
+  const container = document.getElementById('genre-filters');
+  genres.forEach(genre => {
+    const chip = document.createElement('button');
+    chip.className = 'genre-chip';
+    chip.textContent = genre;
+    chip.dataset.genre = genre;
+    chip.addEventListener('click', () => filterByGenre(genre, chip));
+    container.appendChild(chip);
+  });
+
+  container.querySelector('[data-genre="all"]').addEventListener('click', (e) => {
+    filterByGenre('all', e.currentTarget);
+  });
+}
+
+function filterByGenre(genre, activeChip) {
+  document.querySelectorAll('.genre-chip').forEach(c => c.classList.remove('active'));
+  activeChip.classList.add('active');
+
+  const container = document.getElementById('carousels-container');
+  container.innerHTML = '';
+
+  const filtered = genre === 'all' ? allAnimes : allAnimes.filter(a => (a.genres || []).includes(genre));
+
+  if (!filtered.length) {
+    container.innerHTML = '<p class="text-faint text-sm" style="text-align:center;padding:var(--sp-10) 0;">Sin resultados para este género</p>';
+    return;
+  }
+
+  const carousel = createCarousel({
+    title: genre === 'all' ? 'Todo el catálogo' : genre,
+    animes: filtered,
+    onCardClick: goToAnime,
+  });
+  if (carousel) container.appendChild(carousel);
+}
+
+// ── Navigate to anime detail
+function goToAnime(anime) {
+  window.location.href = `anime.html?id=${anime.id}`;
+}
+
+// ── Search
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+const searchGrid = document.getElementById('search-results-grid');
+
+let searchTimeout;
+searchInput.addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  const q = e.target.value.trim();
+
+  if (!q) { searchResults.classList.remove('open'); return; }
+
+  searchTimeout = setTimeout(() => {
+    const results = allAnimes.filter(a => a.title?.toLowerCase().includes(q.toLowerCase())).slice(0, 12);
+    searchGrid.innerHTML = '';
+
+    if (!results.length) {
+      searchGrid.innerHTML = '<p class="text-faint text-sm">Sin resultados</p>';
+    } else {
+      results.forEach(anime => {
+        const { createAnimeCard } = window._carousel || {};
+        const card = document.createElement('div');
+        card.className = 'anime-card';
+        card.style.width = '100%';
+        card.innerHTML = `
+          <div class="anime-card-img-wrap" style="aspect-ratio:2/3;">
+            <img class="anime-card-img" src="${anime.cover || `https://picsum.photos/seed/${anime.id}/200/280`}" alt="${anime.title}" loading="lazy" onerror="this.src='https://picsum.photos/200/280'" />
+            <div class="anime-card-overlay">
+              <div class="anime-card-play">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="anime-card-title">${anime.title}</div>
+        `;
+        card.addEventListener('click', () => { searchResults.classList.remove('open'); goToAnime(anime); });
+        searchGrid.appendChild(card);
+      });
+    }
+
+    searchResults.classList.add('open');
+  }, 250);
+});
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('navbar-search').contains(e.target)) {
+    searchResults.classList.remove('open');
+  }
+});
+
+// ── Navbar scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+}, { passive: true });
+
+// ── Profile dropdown
+const profileBtn = document.getElementById('profile-btn');
+const profileDropdown = document.getElementById('profile-dropdown');
+profileBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  profileDropdown.classList.toggle('open');
+});
+document.addEventListener('click', () => profileDropdown.classList.remove('open'));
+
+// Switch profile
+document.getElementById('switch-profile-btn').addEventListener('click', async () => {
+  profileDropdown.classList.remove('open');
+  localStorage.removeItem('animex_profile');
+  const profiles = await getProfiles();
+  if (profiles.length > 1) {
+    showProfileSelector(profiles);
+  } else {
+    showToast('Solo tienes un perfil', 'info');
+  }
+});
+
+// Logout
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await logoutUser();
+  window.location.href = 'login.html';
+});
+
+// ── Hide loader
+function hideLoader() {
+  const loader = document.getElementById('page-loader');
+  loader.classList.add('hidden');
+  setTimeout(() => loader.remove(), 600);
+}
+</script>
+</body>
+</html>

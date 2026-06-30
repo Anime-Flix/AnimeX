@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <script>!function(){var h=location.hostname;var b=(h==="localhost"||h==="127.0.0.1")?"/":"/AnimeX/";document.write("<base href=\""+b+"\">")}()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Cuenta — AnimeX</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    body { padding-top: 70px; min-height: 100vh; }
+
+    /* ── Navbar simple ── */
+    .top-nav {
+      position: fixed; top:0; left:0; right:0; z-index:900;
+      height: 64px;
+      background: rgba(7,7,16,0.97);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--c-border);
+      display: flex; align-items: center;
+      padding: 0 var(--sp-6); gap: var(--sp-4);
+    }
+
+    .top-nav-logo {
+      font-family: var(--font-display); font-weight:800; font-size:1.25rem;
+      background: var(--c-gradient); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+
+    /* ── Layout ── */
+    .account-layout {
+      max-width: 1100px; margin: 0 auto;
+      padding: var(--sp-8) var(--sp-6);
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--sp-8);
+    }
+
+    @media(max-width:768px) {
+      .account-layout { grid-template-columns:1fr; padding: var(--sp-4); }
+    }
+
+    /* ── Sidebar ── */
+    .account-sidebar {
+      display: flex; flex-direction: column; gap: var(--sp-3);
+    }
+
+    .account-avatar-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      padding: var(--sp-6);
+      text-align: center;
+    }
+
+    .big-avatar {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      display: flex; align-items:center; justify-content:center;
+      font-family: var(--font-display); font-size: 2.25rem; font-weight:900; color:#fff;
+      margin: 0 auto var(--sp-4);
+      box-shadow: 0 0 0 4px var(--c-surface), 0 0 0 6px var(--c-accent);
+    }
+
+    .account-name { font-family:var(--font-display); font-weight:700; font-size:1.125rem; }
+    .account-email { font-size:.8125rem; color:var(--c-text-2); margin-top:4px; }
+
+    .plan-chip {
+      display: inline-flex; align-items:center; gap:6px;
+      padding: 4px 14px;
+      background: var(--c-accent-glow);
+      border: 1px solid rgba(124,58,237,.3);
+      border-radius: var(--r-full);
+      font-size:.8rem; font-weight:700; color:var(--c-accent2);
+      margin-top: var(--sp-3);
+    }
+
+    .sidebar-menu {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+    }
+
+    .sidebar-item {
+      display: flex; align-items:center; gap: var(--sp-3);
+      padding: var(--sp-4) var(--sp-5);
+      font-size:.9rem; font-weight:500; color:var(--c-text-2);
+      cursor:pointer; transition: all var(--t-fast);
+      border-bottom: 1px solid var(--c-border);
+    }
+    .sidebar-item:last-child { border-bottom:none; }
+    .sidebar-item:hover { background:var(--c-surface2); color:var(--c-text); }
+    .sidebar-item.active { background:rgba(124,58,237,.1); color:var(--c-accent2); font-weight:600; }
+    .sidebar-item svg { width:18px; height:18px; flex-shrink:0; }
+
+    /* ── Content panels ── */
+    .account-panel { display:none; }
+    .account-panel.active { display:block; animation: fadeIn .3s ease; }
+
+    .panel-title {
+      font-family:var(--font-display); font-size:1.5rem; font-weight:700;
+      margin-bottom: var(--sp-6);
+      display:flex; align-items:center; gap:var(--sp-3);
+    }
+
+    .panel-title::before {
+      content:''; width:4px; height:1em;
+      background:var(--c-gradient); border-radius:var(--r-full); display:block;
+    }
+
+    .section-card {
+      background:var(--c-surface); border:1px solid var(--c-border);
+      border-radius:var(--r-xl); padding:var(--sp-6); margin-bottom:var(--sp-5);
+    }
+
+    .section-card h3 {
+      font-family:var(--font-display); font-weight:700; font-size:1rem;
+      margin-bottom: var(--sp-5); color:var(--c-text-2);
+      text-transform:uppercase; letter-spacing:.06em; font-size:.75rem;
+    }
+
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4); }
+    @media(max-width:600px) { .form-grid { grid-template-columns:1fr; } }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3,1fr); gap:var(--sp-4);
+      margin-bottom: var(--sp-6);
+    }
+    @media(max-width:600px) { .stats-row { grid-template-columns:1fr 1fr; } }
+
+    .stat-pill {
+      background:var(--c-surface); border:1px solid var(--c-border);
+      border-radius:var(--r-xl); padding:var(--sp-5); text-align:center;
+    }
+    .stat-pill-val {
+      font-family:var(--font-display); font-size:1.75rem; font-weight:800;
+      background:var(--c-gradient); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .stat-pill-label { font-size:.75rem; color:var(--c-text-3); margin-top:4px; }
+
+    /* ── Profile cards ── */
+    .profiles-row {
+      display: flex; flex-wrap:wrap; gap:var(--sp-4);
+    }
+
+    .mini-profile-card {
+      display:flex; flex-direction:column; align-items:center; gap:var(--sp-2);
+      padding:var(--sp-4) var(--sp-5);
+      background:var(--c-surface2); border:1px solid var(--c-border);
+      border-radius:var(--r-xl); cursor:pointer;
+      transition:all var(--t-base); min-width:90px;
+    }
+    .mini-profile-card:hover { border-color:var(--c-accent); transform:translateY(-2px); }
+    .mini-profile-card.current { border-color:var(--c-accent); background:rgba(124,58,237,.1); }
+
+    .mini-avatar {
+      width:52px; height:52px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-display); font-size:1.25rem; font-weight:800; color:#fff;
+    }
+
+    .add-profile-card {
+      min-width:90px;
+      display:flex; flex-direction:column; align-items:center; gap:var(--sp-2);
+      padding:var(--sp-4) var(--sp-5);
+      background:var(--c-surface2); border:2px dashed var(--c-border2);
+      border-radius:var(--r-xl); cursor:pointer;
+      transition:all var(--t-base); color:var(--c-text-3);
+    }
+    .add-profile-card:hover { border-color:var(--c-accent); color:var(--c-accent2); }
+
+    /* ── Notification item ── */
+    .notif-item {
+      display:flex; gap:var(--sp-4); align-items:flex-start;
+      padding:var(--sp-4); border-radius:var(--r-lg);
+      transition:background var(--t-fast); cursor:pointer;
+    }
+    .notif-item:hover { background:var(--c-surface2); }
+    .notif-item.unread { background:rgba(124,58,237,.06); }
+
+    .notif-icon {
+      width:38px; height:38px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; font-size:1.1rem;
+    }
+
+    /* ── Danger zone ── */
+    .danger-zone {
+      border:1px solid rgba(239,68,68,.25);
+      background:rgba(239,68,68,.04);
+      border-radius:var(--r-xl); padding:var(--sp-5);
+    }
+
+    /* ── History list ── */
+    .history-item {
+      display:flex; align-items:center; gap:var(--sp-4);
+      padding:var(--sp-3) 0;
+      border-bottom:1px solid var(--c-border);
+    }
+    .history-item:last-child { border-bottom:none; }
+    .history-thumb {
+      width:56px; height:80px; object-fit:cover;
+      border-radius:var(--r-md); background:var(--c-surface3); flex-shrink:0;
+    }
+    .history-progress {
+      height:3px; background:var(--c-surface3); border-radius:var(--r-full);
+      margin-top:var(--sp-2); overflow:hidden;
+    }
+    .history-progress-fill {
+      height:100%; background:var(--c-accent); border-radius:var(--r-full);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="top-nav">
+  <a href="index.html" class="top-nav-logo">AnimeX</a>
+  <nav style="display:flex;gap:var(--sp-2);margin-left:var(--sp-4);">
+    <a href="index.html" class="btn btn-ghost btn-sm">Inicio</a>
+    <a href="profiles.html" class="btn btn-ghost btn-sm">Perfiles</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:var(--sp-3);align-items:center;">
+    <button class="btn btn-ghost btn-sm" id="logout-btn">Cerrar sesión</button>
+  </div>
+</nav>
+
+<!-- Loading -->
+<div id="page-loader" style="display:flex;align-items:center;justify-content:center;min-height:80vh;">
+  <div style="width:44px;height:44px;border:3px solid var(--c-surface3);border-top-color:var(--c-accent);border-radius:50%;animation:spin .8s linear infinite;"></div>
+</div>
+
+<!-- Main layout -->
+<div class="account-layout" id="account-layout" style="display:none;">
+
+  <!-- Sidebar -->
+  <aside class="account-sidebar">
+
+    <div class="account-avatar-card">
+      <div class="big-avatar" id="big-avatar">U</div>
+      <div class="account-name" id="acct-name">—</div>
+      <div class="account-email" id="acct-email">—</div>
+      <div class="plan-chip" id="plan-chip">⭐ Plan</div>
+      <div style="margin-top:var(--sp-4);">
+        <div class="text-xs text-faint">Miembro desde</div>
+        <div class="text-sm" style="margin-top:2px;" id="member-since">—</div>
+      </div>
+    </div>
+
+    <div class="sidebar-menu">
+      <div class="sidebar-item active" data-panel="overview">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Resumen
+      </div>
+      <div class="sidebar-item" data-panel="profiles">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+        Mis perfiles
+      </div>
+      <div class="sidebar-item" data-panel="history">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historial
+      </div>
+      <div class="sidebar-item" data-panel="notifications">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Notificaciones
+        <span class="badge badge-accent" id="notif-badge" style="margin-left:auto;display:none;">0</span>
+      </div>
+      <div class="sidebar-item" data-panel="security">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Seguridad
+      </div>
+      <div class="sidebar-item" data-panel="settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configuración
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Content -->
+  <div>
+
+    <!-- OVERVIEW -->
+    <div class="account-panel active" id="panel-overview">
+      <h2 class="panel-title">Resumen</h2>
+
+      <div class="stats-row" id="stats-row">
+        <div class="stat-pill">
+          <div class="stat-pill-val" id="stat-watched">0</div>
+          <div class="stat-pill-label">Animes vistos</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-val" id="stat-episodes">0</div>
+          <div class="stat-pill-label">Episodios</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-val" id="stat-favorites">0</div>
+          <div class="stat-pill-label">Favoritos</div>
+        </div>
+      </div>
+
+      <!-- Plan info -->
+      <div class="section-card">
+        <h3>Plan actual</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-4);">
+          <div>
+            <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;" id="plan-name-big">—</div>
+            <div class="text-sm text-muted" id="plan-features-txt">—</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:var(--font-display);font-size:1.75rem;font-weight:900;" id="plan-price-big">—</div>
+            <a href="activate.html" class="btn btn-primary btn-sm" style="margin-top:var(--sp-2);">Gestionar plan</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Continue watching -->
+      <div class="section-card">
+        <h3>Continuar viendo</h3>
+        <div id="continue-list">
+          <p class="text-faint text-sm" style="text-align:center;padding:var(--sp-4) 0;">Sin contenido en progreso</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILES -->
+    <div class="account-panel" id="panel-profiles">
+      <h2 class="panel-title">Mis perfiles</h2>
+      <div class="section-card">
+        <h3>Perfiles activos</h3>
+        <div class="profiles-row" id="profiles-row"></div>
+        <div style="margin-top:var(--sp-4);" id="profiles-limit-note"></div>
+      </div>
+      <div class="section-card">
+        <h3>Información</h3>
+        <p class="text-sm text-muted" style="line-height:1.7;">
+          Cada perfil tiene su propio historial, favoritos y recomendaciones independientes.
+          Haz click derecho en un perfil para editarlo o eliminarlo.
+          El perfil principal no puede eliminarse.
+        </p>
+        <a href="profiles.html" class="btn btn-secondary" style="margin-top:var(--sp-4);">
+          Gestionar perfiles →
+        </a>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="account-panel" id="panel-history">
+      <h2 class="panel-title">Historial de reproducción</h2>
+      <div class="section-card">
+        <h3>Visto recientemente</h3>
+        <div id="history-list">
+          <p class="text-faint text-sm" style="text-align:center;padding:var(--sp-6) 0;">Sin historial aún</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="account-panel" id="panel-notifications">
+      <h2 class="panel-title">Notificaciones</h2>
+      <div class="section-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-4);">
+          <h3 style="margin:0;">Todas las notificaciones</h3>
+          <button class="btn btn-ghost btn-sm" id="mark-all-read-btn">Marcar todas leídas</button>
+        </div>
+        <div id="notif-list">
+          <p class="text-faint text-sm" style="text-align:center;padding:var(--sp-6) 0;">Sin notificaciones</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="account-panel" id="panel-security">
+      <h2 class="panel-title">Seguridad</h2>
+      <div class="section-card">
+        <h3>Cambiar contraseña</h3>
+        <div style="display:flex;flex-direction:column;gap:var(--sp-4);max-width:440px;">
+          <div class="input-group">
+            <label class="input-label">Contraseña actual</label>
+            <input type="password" class="input-field" id="cur-pass" placeholder="••••••••" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Nueva contraseña</label>
+            <input type="password" class="input-field" id="new-pass" placeholder="Mínimo 8 caracteres" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Confirmar nueva contraseña</label>
+            <input type="password" class="input-field" id="new-pass2" placeholder="Repite la contraseña" />
+          </div>
+          <button class="btn btn-primary" id="change-pass-btn" style="width:fit-content;">
+            <span class="btn-text">Actualizar contraseña</span>
+          </button>
+        </div>
+      </div>
+      <div class="section-card">
+        <h3>Sesiones activas</h3>
+        <p class="text-sm text-muted" style="margin-bottom:var(--sp-4);">Cierra todas las sesiones en otros dispositivos.</p>
+        <button class="btn btn-secondary" id="signout-all-btn">Cerrar todas las sesiones</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="account-panel" id="panel-settings">
+      <h2 class="panel-title">Configuración</h2>
+      <div class="section-card">
+        <h3>Preferencias</h3>
+        <div style="display:flex;flex-direction:column;gap:var(--sp-5);">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:600;">Autoplay</div>
+              <div class="text-sm text-muted">Reproducir siguiente episodio automáticamente</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;">
+              <input type="checkbox" id="pref-autoplay" checked style="opacity:0;width:0;height:0;" />
+              <span class="toggle-track" onclick="togglePref('autoplay',this.previousElementSibling)"></span>
+            </label>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:600;">Notificaciones</div>
+              <div class="text-sm text-muted">Recibir avisos de nuevos episodios</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;">
+              <input type="checkbox" id="pref-notifs" checked style="opacity:0;width:0;height:0;" />
+              <span class="toggle-track" onclick="togglePref('notifs',this.previousElementSibling)"></span>
+            </label>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:600;">Calidad por defecto</div>
+              <div class="text-sm text-muted">Resolución de video preferida</div>
+            </div>
+            <select class="input-field" id="pref-quality" style="width:auto;padding:.4em .8em;font-size:.875rem;">
+              <option value="auto">Auto</option>
+              <option value="1080p">1080p</option>
+              <option value="720p">720p</option>
+              <option value="480p">480p</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:fit-content;" id="save-prefs-btn">
+            <span class="btn-text">Guardar preferencias</span>
+          </button>
+        </div>
+      </div>
+      <div class="danger-zone">
+        <h3 style="color:var(--c-error);font-weight:700;margin-bottom:var(--sp-3);">⚠️ Zona de peligro</h3>
+        <p class="text-sm text-muted" style="margin-bottom:var(--sp-4);">Esta acción es irreversible. Se eliminarán todos tus datos.</p>
+        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--c-error);border:1px solid rgba(239,68,68,.3);" id="delete-acct-btn">
+          Eliminar mi cuenta
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toggle CSS -->
+<style>
+.toggle-track {
+  position:absolute; inset:0; background:var(--c-surface3);
+  border-radius:34px; cursor:pointer; transition:background .3s;
+}
+.toggle-track::before {
+  content:''; position:absolute; height:18px; width:18px;
+  left:3px; bottom:3px; background:#fff; border-radius:50%;
+  transition:transform .3s;
+}
+input:checked + .toggle-track { background: var(--c-accent); }
+input:checked + .toggle-track::before { transform: translateX(20px); }
+</style>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { auth, db } from './assets/js/core/firebase.js';
+import { onAuthChange, getCurrentUserData, logoutUser, changePassword } from './assets/js/core/auth.js';
+import { getProfiles, getContinueWatching, getFavorites } from './assets/js/services/userService.js';
+import { getPlan } from './assets/js/services/planService.js';
+import { getAnime } from './assets/js/services/animeService.js';
+import { listenNotifications, markAllRead, markRead } from './assets/js/services/notificationService.js';
+import { showToast } from './assets/js/components/toast.js';
+import { doc, updateDoc, deleteDoc, collection, getDocs, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { deleteUser } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+let userData = null;
+let uid = null;
+
+// ── Auth guard
+onAuthChange(async user => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  if (userData) return; // already loaded
+
+  uid = user.uid;
+  userData = await getCurrentUserData();
+  if (!userData) { window.location.href = 'login.html'; return; }
+  if (userData.status !== 'active') { window.location.href = 'activate.html'; return; }
+
+  await loadPage();
+});
+
+async function loadPage() {
+  document.getElementById('page-loader').style.display = 'none';
+  document.getElementById('account-layout').style.display = 'grid';
+
+  // Header info
+  const profileId = localStorage.getItem('animex_profile') || 'default';
+  let profiles = [];
+  try { profiles = await getProfiles(); } catch {}
+
+  const activeProfile = profiles.find(p => p.id === profileId) || profiles[0]
+    || { name: userData.email.split('@')[0], color: '#7c3aed' };
+
+  const initial = (activeProfile.name || 'U')[0].toUpperCase();
+  document.getElementById('big-avatar').textContent = initial;
+  document.getElementById('big-avatar').style.background = activeProfile.color || '#7c3aed';
+  document.getElementById('acct-name').textContent = activeProfile.name;
+  document.getElementById('acct-email').textContent = userData.email;
+  document.getElementById('member-since').textContent =
+    userData.createdAt?.toDate?.()?.toLocaleDateString('es', { year:'numeric', month:'long' }) || '—';
+
+  // Plan
+  const plan = await getPlan(userData.planId).catch(() => null);
+  if (plan) {
+    document.getElementById('plan-chip').textContent = `⭐ ${plan.name}`;
+    document.getElementById('plan-name-big').textContent = plan.name;
+    document.getElementById('plan-features-txt').textContent = (plan.features || []).join(' · ');
+    document.getElementById('plan-price-big').textContent = `$${plan.price}/mes`;
+  }
+
+  // Stats
+  const [continueList, favorites] = await Promise.all([
+    getContinueWatching(50).catch(() => []),
+    getFavorites().catch(() => []),
+  ]);
+
+  const watchedSet = new Set(continueList.map(h => h.animeId));
+  document.getElementById('stat-watched').textContent   = watchedSet.size;
+  document.getElementById('stat-episodes').textContent  = continueList.length;
+  document.getElementById('stat-favorites').textContent = favorites.length;
+
+  // Continue watching
+  renderContinueWatching(continueList.slice(0, 8));
+
+  // Profiles panel
+  renderProfilesPanel(profiles, plan);
+
+  // History
+  renderHistory(continueList);
+
+  // Notifications (real-time via RTDB)
+  listenNotifications(uid, notifs => {
+    renderNotifications(notifs);
+    const unread = notifs.filter(n => !n.read).length;
+    const badge = document.getElementById('notif-badge');
+    if (unread > 0) {
+      badge.textContent = unread;
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+  });
+
+  // Load saved preferences
+  const prefs = JSON.parse(localStorage.getItem('animex_prefs') || '{}');
+  if (prefs.autoplay === false) document.getElementById('pref-autoplay').checked = false;
+  if (prefs.notifs === false)   document.getElementById('pref-notifs').checked = false;
+  if (prefs.quality)            document.getElementById('pref-quality').value = prefs.quality;
+}
+
+// ── Continue watching render
+async function renderContinueWatching(list) {
+  const container = document.getElementById('continue-list');
+  if (!list.length) return;
+
+  container.innerHTML = '';
+  for (const item of list.slice(0, 5)) {
+    const anime = await getAnime(item.animeId).catch(() => null);
+    if (!anime) continue;
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `
+      <img class="history-thumb" src="${anime.cover || ''}" alt="${anime.title}"
+           onerror="this.style.background='var(--c-surface3)';this.style.display='none'" />
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${anime.title}</div>
+        <div class="text-xs text-muted" style="margin-bottom:var(--sp-2);">Episodio ${item.episodeId?.slice(-2) || '?'} · ${item.progress || 0}% completado</div>
+        <div class="history-progress"><div class="history-progress-fill" style="width:${item.progress||0}%"></div></div>
+      </div>
+      <a href="anime.html?id=${anime.id}" class="btn btn-sm btn-primary">Continuar</a>
+    `;
+    container.appendChild(div);
+  }
+}
+
+// ── Profiles panel
+function renderProfilesPanel(profiles, plan) {
+  const row = document.getElementById('profiles-row');
+  const max = plan?.profiles || 1;
+
+  row.innerHTML = profiles.map(p => `
+    <div class="mini-profile-card ${p.id === (localStorage.getItem('animex_profile')||'default') ? 'current':''}"
+         onclick="window.location.href='profiles.html'">
+      <div class="mini-avatar" style="background:${p.color||'#7c3aed'}">${(p.name||'U')[0].toUpperCase()}</div>
+      <div style="font-size:.8125rem;font-weight:600;">${p.name}</div>
+      ${p.isDefault ? '<div class="text-xs text-faint">Principal</div>' : ''}
+    </div>
+  `).join('');
+
+  if (profiles.length < max) {
+    row.innerHTML += `
+      <div class="add-profile-card" onclick="window.location.href='profiles.html'">
+        <div style="font-size:1.75rem;">＋</div>
+        <div style="font-size:.8rem;font-weight:600;">Nuevo</div>
+      </div>`;
+  }
+
+  document.getElementById('profiles-limit-note').innerHTML =
+    `<p class="text-xs text-faint">${profiles.length} de ${max} perfiles usados en tu plan ${plan?.name||''}</p>`;
+}
+
+// ── History
+async function renderHistory(list) {
+  const container = document.getElementById('history-list');
+  if (!list.length) return;
+  container.innerHTML = '';
+
+  for (const item of list.slice(0, 20)) {
+    const anime = await getAnime(item.animeId).catch(() => null);
+    if (!anime) continue;
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `
+      <img class="history-thumb" src="${anime.cover||''}" alt="${anime.title}"
+           onerror="this.style.display='none'" />
+      <div style="flex:1;">
+        <div style="font-weight:600;">${anime.title}</div>
+        <div class="text-xs text-muted">Ep ${item.episodeId?.slice(-2)||'?'} · ${item.progress||0}%</div>
+        <div class="history-progress" style="margin-top:var(--sp-2);">
+          <div class="history-progress-fill" style="width:${item.progress||0}%"></div>
+        </div>
+      </div>
+      <a href="player.html?anime=${anime.id}&season=${item.seasonId}&episode=${item.episodeId}"
+         class="btn btn-sm btn-ghost">▶ Ver</a>
+    `;
+    container.appendChild(div);
+  }
+}
+
+// ── Notifications
+function renderNotifications(notifs) {
+  const container = document.getElementById('notif-list');
+  if (!notifs.length) {
+    container.innerHTML = '<p class="text-faint text-sm" style="text-align:center;padding:var(--sp-6) 0;">Sin notificaciones</p>';
+    return;
+  }
+
+  const icons = {
+    admin_reply: '💬', new_episode: '🎬', plan: '⭐', system: '🔔'
+  };
+
+  container.innerHTML = notifs.map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" onclick="markOneRead('${n.id}')">
+      <div class="notif-icon" style="background:rgba(124,58,237,.12);">
+        ${icons[n.type] || '🔔'}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:${n.read?'500':'700'};font-size:.9rem;">${n.title||''}</div>
+        <div class="text-sm text-muted">${n.body||''}</div>
+        <div class="text-xs text-faint" style="margin-top:4px;">
+          ${n.createdAt ? new Date(n.createdAt).toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}
+        </div>
+      </div>
+      ${!n.read ? '<div style="width:8px;height:8px;background:var(--c-accent);border-radius:50%;flex-shrink:0;margin-top:6px;"></div>' : ''}
+    </div>
+  `).join('');
+}
+
+window.markOneRead = async function(id) {
+  await markRead(uid, id).catch(() => {});
+};
+
+document.getElementById('mark-all-read-btn').addEventListener('click', async () => {
+  await markAllRead(uid).catch(() => {});
+  showToast('Todas las notificaciones marcadas como leídas', 'success');
+});
+
+// ── Navigation
+document.querySelectorAll('.sidebar-item[data-panel]').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.account-panel').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(`panel-${item.dataset.panel}`).classList.add('active');
+  });
+});
+
+// ── Change password
+document.getElementById('change-pass-btn').addEventListener('click', async () => {
+  const cur  = document.getElementById('cur-pass').value;
+  const nw   = document.getElementById('new-pass').value;
+  const nw2  = document.getElementById('new-pass2').value;
+  if (!cur || !nw) { showToast('Completa todos los campos', 'warning'); return; }
+  if (nw !== nw2)  { showToast('Las contraseñas no coinciden', 'error'); return; }
+  if (nw.length < 8){ showToast('Mínimo 8 caracteres', 'warning'); return; }
+
+  const btn = document.getElementById('change-pass-btn');
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    await changePassword(cur, nw);
+    showToast('Contraseña actualizada', 'success');
+    ['cur-pass','new-pass','new-pass2'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) {
+    const msgs = {
+      'auth/wrong-password': 'Contraseña actual incorrecta',
+      'auth/weak-password':  'La nueva contraseña es muy débil',
+    };
+    showToast(msgs[e.code] || e.message, 'error');
+  } finally {
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+});
+
+// ── Sign out all
+document.getElementById('signout-all-btn').addEventListener('click', async () => {
+  await logoutUser();
+  window.location.href = 'login.html';
+});
+
+// ── Save preferences
+document.getElementById('save-prefs-btn').addEventListener('click', () => {
+  const prefs = {
+    autoplay: document.getElementById('pref-autoplay').checked,
+    notifs:   document.getElementById('pref-notifs').checked,
+    quality:  document.getElementById('pref-quality').value,
+  };
+  localStorage.setItem('animex_prefs', JSON.stringify(prefs));
+  showToast('Preferencias guardadas', 'success');
+});
+
+// ── Toggle helper
+window.togglePref = function(key, checkbox) {
+  checkbox.checked = !checkbox.checked;
+};
+
+// ── Delete account
+document.getElementById('delete-acct-btn').addEventListener('click', async () => {
+  if (!confirm('¿Seguro que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) return;
+  if (!confirm('¿Última confirmación? Se borrarán TODOS tus datos.')) return;
+  try {
+    // Delete Firestore data
+    await deleteDoc(doc(db, 'users', uid));
+    // Delete auth account
+    await deleteUser(auth.currentUser);
+    window.location.href = 'login.html';
+  } catch(e) {
+    showToast('Error: ' + e.message + '. Vuelve a iniciar sesión e intenta de nuevo.', 'error');
+  }
+});
+
+// ── Logout
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await logoutUser();
+  window.location.href = 'login.html';
+});
+</script>
+</body>
+</html>

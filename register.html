@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <script>!function(){var h=location.hostname;var b=(h==="localhost"||h==="127.0.0.1")?"/":"/AnimeX/";document.write("<base href=\""+b+"\">")}()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crear Cuenta — AnimeX</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    /* ── Register specific styles ── */
+    .register-layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+    }
+
+    @media (max-width: 900px) {
+      .register-layout { grid-template-columns: 1fr; }
+      .register-plans-col { display: none; }
+      .register-form-col { padding: var(--sp-6); }
+    }
+
+    /* Form column */
+    .register-form-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-8) var(--sp-12);
+      position: relative;
+      z-index: 1;
+    }
+
+    .register-form-inner {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Plans column */
+    .register-plans-col {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-8);
+      background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(168,85,247,0.05) 100%);
+      border-left: 1px solid var(--c-border);
+      overflow: hidden;
+    }
+
+    .register-plans-col::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .plans-preview {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .plans-preview-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: var(--sp-2);
+    }
+
+    .plans-preview-sub {
+      color: var(--c-text-2);
+      font-size: 0.9rem;
+      margin-bottom: var(--sp-6);
+    }
+
+    /* Plan cards */
+    .plan-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      padding: var(--sp-5);
+      cursor: pointer;
+      transition: all var(--t-base);
+      position: relative;
+      margin-bottom: var(--sp-3);
+    }
+
+    .plan-card:hover {
+      border-color: var(--c-accent);
+      transform: translateX(4px);
+    }
+
+    .plan-card.selected {
+      border-color: var(--c-accent);
+      background: rgba(124,58,237,0.08);
+      box-shadow: 0 0 0 1px var(--c-accent), var(--shadow-glow);
+    }
+
+    .plan-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--sp-3);
+    }
+
+    .plan-name {
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      font-weight: 700;
+    }
+
+    .plan-price {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .plan-price span {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--c-text-2);
+    }
+
+    .plan-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-2);
+    }
+
+    .plan-feature-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      background: var(--c-surface3);
+      border-radius: var(--r-full);
+      color: var(--c-text-2);
+    }
+
+    .plan-radio {
+      position: absolute;
+      top: var(--sp-4);
+      right: var(--sp-4);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--c-border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--t-base);
+    }
+
+    .plan-card.selected .plan-radio {
+      border-color: var(--c-accent);
+      background: var(--c-accent);
+    }
+
+    .plan-radio::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0;
+      transition: opacity var(--t-fast);
+    }
+
+    .plan-card.selected .plan-radio::after { opacity: 1; }
+
+    /* Popular badge */
+    .popular-ribbon {
+      position: absolute;
+      top: -1px;
+      left: var(--sp-5);
+      background: var(--c-gradient);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 0 0 var(--r-sm) var(--r-sm);
+      letter-spacing: 0.05em;
+    }
+
+    /* Password strength */
+    .strength-bar {
+      height: 3px;
+      background: var(--c-surface3);
+      border-radius: var(--r-full);
+      margin-top: var(--sp-2);
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      border-radius: var(--r-full);
+      transition: width 0.4s ease, background 0.4s ease;
+      width: 0%;
+    }
+
+    .strength-label {
+      font-size: 0.75rem;
+      margin-top: 4px;
+      color: var(--c-text-3);
+    }
+
+    /* Mobile plan selector */
+    .mobile-plan-select {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .mobile-plan-select { display: block; }
+    }
+
+    /* Steps indicator */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: var(--sp-8);
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      flex: 1;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--c-surface3);
+      border: 1px solid var(--c-border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all var(--t-base);
+    }
+
+    .step.active .step-num {
+      background: var(--c-accent);
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 4px var(--c-accent-glow);
+    }
+
+    .step.done .step-num {
+      background: var(--c-success);
+      border-color: var(--c-success);
+    }
+
+    .step-label {
+      font-size: 0.75rem;
+      color: var(--c-text-3);
+      white-space: nowrap;
+    }
+
+    .step.active .step-label { color: var(--c-text); font-weight: 600; }
+
+    .step-line {
+      flex: 1;
+      height: 1px;
+      background: var(--c-border);
+      margin: 0 var(--sp-2);
+    }
+
+    .step-line.done { background: var(--c-success); }
+  </style>
+</head>
+<body>
+
+<div class="auth-bg"></div>
+
+<div class="register-layout">
+
+  <!-- ── Form Column ── -->
+  <div class="register-form-col">
+    <div class="register-form-inner anim-slide-up">
+
+      <!-- Logo -->
+      <a href="index.html" class="auth-logo" style="justify-content:flex-start;margin-bottom:var(--sp-6);">
+        <div class="auth-logo-mark">X</div>
+        <span class="auth-logo-name">AnimeX</span>
+      </a>
+
+      <!-- Steps -->
+      <div class="steps">
+        <div class="step active" id="step-1-ind">
+          <div class="step-num">1</div>
+          <span class="step-label">Cuenta</span>
+        </div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step" id="step-2-ind">
+          <div class="step-num">2</div>
+          <span class="step-label">Plan</span>
+        </div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step" id="step-3-ind">
+          <div class="step-num">3</div>
+          <span class="step-label">Listo</span>
+        </div>
+      </div>
+
+      <!-- STEP 1: Account info -->
+      <div id="step-1">
+        <h1 class="auth-title" style="text-align:left">Crea tu cuenta</h1>
+        <p class="auth-subtitle" style="text-align:left;margin-bottom:var(--sp-6)">Comienza tu aventura anime hoy</p>
+
+        <form class="auth-form" id="account-form" novalidate>
+
+          <div class="input-group">
+            <label class="input-label">Correo electrónico</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="email" id="reg-email" class="input-field" placeholder="tu@correo.com" autocomplete="email" required />
+            </div>
+            <span class="input-error" id="email-err"></span>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Contraseña</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <input type="password" id="reg-pass" class="input-field" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required />
+              <button type="button" class="input-toggle" id="toggle-pass1">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+            <span class="strength-label" id="strength-label"></span>
+            <span class="input-error" id="pass-err"></span>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Confirmar contraseña</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <input type="password" id="reg-pass2" class="input-field" placeholder="Repite tu contraseña" autocomplete="new-password" required />
+            </div>
+            <span class="input-error" id="pass2-err"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-full">
+            <span class="btn-text">Continuar</span>
+          </button>
+
+        </form>
+
+        <p class="auth-footer">
+          ¿Ya tienes cuenta?
+          <a href="login.html" class="auth-link">Inicia sesión</a>
+        </p>
+      </div>
+
+      <!-- STEP 2: Plan selection (mobile) + confirmation -->
+      <div id="step-2" style="display:none">
+        <h2 class="auth-title" style="text-align:left">Elige tu plan</h2>
+        <p class="auth-subtitle" style="text-align:left;margin-bottom:var(--sp-6)">Cambia cuando quieras. Sin compromisos.</p>
+
+        <div id="mobile-plans"></div>
+
+        <button class="btn btn-primary btn-lg btn-full" id="confirm-plan-btn" style="margin-top:var(--sp-4)">
+          <span class="btn-text">Crear cuenta</span>
+        </button>
+
+        <button class="btn btn-ghost btn-full" style="margin-top:var(--sp-3)" id="back-btn">
+          ← Volver
+        </button>
+      </div>
+
+      <!-- STEP 3: Success -->
+      <div id="step-3" style="display:none;text-align:center;padding:var(--sp-8) 0;">
+        <div style="width:80px;height:80px;background:rgba(16,185,129,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto var(--sp-6);">
+          <svg viewBox="0 0 24 24" width="40" height="40" style="color:var(--c-success);stroke:var(--c-success)">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2 class="display-md" style="margin-bottom:var(--sp-3)">¡Cuenta creada!</h2>
+        <p class="text-muted" style="margin-bottom:var(--sp-8);">
+          Tu cuenta está pendiente de aprobación. Un administrador revisará tu pago y te enviará tu código de activación.
+        </p>
+        <a href="activate.html" class="btn btn-primary btn-lg btn-full">
+          Continuar a activación →
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Plans Column (desktop) ── -->
+  <div class="register-plans-col">
+    <div class="plans-preview">
+      <p class="text-muted text-sm" style="margin-bottom:var(--sp-2);font-weight:500;text-transform:uppercase;letter-spacing:.08em">Planes disponibles</p>
+      <h2 class="plans-preview-title">Todo el anime que quieras</h2>
+      <p class="plans-preview-sub">Sin límites. Sin anuncios. Sin compromisos.</p>
+
+      <div id="desktop-plans">
+        <!-- Renderizado por JS -->
+        <div class="skeleton" style="height:110px;margin-bottom:var(--sp-3);"></div>
+        <div class="skeleton" style="height:110px;margin-bottom:var(--sp-3);"></div>
+        <div class="skeleton" style="height:110px;"></div>
+      </div>
+
+      <p class="text-faint text-xs" style="margin-top:var(--sp-6);text-align:center;line-height:1.7">
+        ✓ Cancela cuando quieras &nbsp;·&nbsp; ✓ Soporte 24/7 &nbsp;·&nbsp; ✓ Sin contratos
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { registerUser, onAuthChange } from './assets/js/core/auth.js';
+import { getPlans } from './assets/js/services/planService.js';
+import { showToast } from './assets/js/components/toast.js';
+
+// Solo redirigir si ya tiene sesión activa (no pending)
+onAuthChange(async user => {
+  if (!user) return;
+  try {
+    const { getCurrentUserData } = await import('./assets/js/core/auth.js');
+    const data = await getCurrentUserData();
+    if (!data) return;
+    if (data.status === 'active') {
+      window.location.href = data.role === 'admin' ? 'admin/index.html' : 'index.html';
+    } else if (data.status === 'pending') {
+      window.location.href = 'activate.html';
+    }
+    // Si no tiene status válido, dejar en register
+  } catch(e) {
+    // silenciar — dejar al usuario en register
+  }
+});
+
+let selectedPlan = 'standard';
+let plans = [];
+let currentStep = 1;
+let userData = {};
+
+// ── Load plans
+async function loadPlans() {
+  plans = await getPlans();
+  renderPlans('desktop-plans', true);
+  renderPlans('mobile-plans', false);
+}
+
+function renderPlans(containerId, selectable) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  plans.forEach(plan => {
+    const card = document.createElement('div');
+    card.className = `plan-card ${selectedPlan === plan.id ? 'selected' : ''}`;
+    card.dataset.plan = plan.id;
+    card.innerHTML = `
+      ${plan.popular ? '<div class="popular-ribbon">⭐ MÁS POPULAR</div>' : ''}
+      <div class="plan-radio"></div>
+      <div class="plan-card-header">
+        <span class="plan-name" style="color:${plan.color}">${plan.name}</span>
+        <span class="plan-price">$${plan.price}<span>/mes</span></span>
+      </div>
+      <div class="plan-features">
+        ${plan.features.map(f => `<span class="plan-feature-tag">${f}</span>`).join('')}
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      selectedPlan = plan.id;
+      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll(`[data-plan="${plan.id}"]`).forEach(c => c.classList.add('selected'));
+    });
+
+    container.appendChild(card);
+  });
+}
+
+loadPlans();
+
+// ── Password strength
+const passEl = document.getElementById('reg-pass');
+passEl.addEventListener('input', () => {
+  const val = passEl.value;
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (val.length >= 12) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  const pct  = (score / 5) * 100;
+  const colors = ['', '#ef4444', '#f59e0b', '#f59e0b', '#10b981', '#10b981'];
+  const labels = ['', 'Muy débil', 'Débil', 'Aceptable', 'Fuerte', 'Muy fuerte'];
+
+  document.getElementById('strength-fill').style.width = pct + '%';
+  document.getElementById('strength-fill').style.background = colors[score];
+  document.getElementById('strength-label').textContent = val ? labels[score] : '';
+  document.getElementById('strength-label').style.color = colors[score];
+});
+
+// Toggle pass
+document.getElementById('toggle-pass1').addEventListener('click', () => {
+  passEl.type = passEl.type === 'text' ? 'password' : 'text';
+});
+
+// ── Step 1 form
+document.getElementById('account-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  let valid = true;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('email-err').textContent = 'Email inválido';
+    document.getElementById('reg-email').classList.add('error');
+    valid = false;
+  } else {
+    document.getElementById('email-err').textContent = '';
+    document.getElementById('reg-email').classList.remove('error');
+  }
+
+  if (!pass || pass.length < 8) {
+    document.getElementById('pass-err').textContent = 'Mínimo 8 caracteres';
+    passEl.classList.add('error');
+    valid = false;
+  } else {
+    document.getElementById('pass-err').textContent = '';
+    passEl.classList.remove('error');
+  }
+
+  if (pass !== pass2) {
+    document.getElementById('pass2-err').textContent = 'Las contraseñas no coinciden';
+    document.getElementById('reg-pass2').classList.add('error');
+    valid = false;
+  } else {
+    document.getElementById('pass2-err').textContent = '';
+    document.getElementById('reg-pass2').classList.remove('error');
+  }
+
+  if (!valid) return;
+
+  userData = { email, password: pass };
+  goToStep(2);
+});
+
+// ── Step 2 confirm
+document.getElementById('confirm-plan-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('confirm-plan-btn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    await registerUser(userData.email, userData.password, selectedPlan);
+    goToStep(3);
+    showToast('¡Cuenta creada exitosamente!', 'success');
+  } catch (err) {
+    const msgs = {
+      'auth/email-already-in-use': 'Este email ya está registrado',
+      'auth/invalid-email': 'Email inválido',
+      'auth/weak-password': 'La contraseña es muy débil',
+    };
+    showToast(msgs[err.code] || 'Error al crear la cuenta', 'error');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('back-btn').addEventListener('click', () => goToStep(1));
+
+// ── Step management
+function goToStep(n) {
+  currentStep = n;
+  document.getElementById('step-1').style.display = n === 1 ? '' : 'none';
+  document.getElementById('step-2').style.display = n === 2 ? '' : 'none';
+  document.getElementById('step-3').style.display = n === 3 ? '' : 'none';
+
+  // Update step indicators
+  for (let i = 1; i <= 3; i++) {
+    const ind = document.getElementById(`step-${i}-ind`);
+    ind.classList.remove('active', 'done');
+    if (i < n) ind.classList.add('done');
+    if (i === n) ind.classList.add('active');
+  }
+
+  document.getElementById('line-1').className = `step-line ${n > 1 ? 'done' : ''}`;
+  document.getElementById('line-2').className = `step-line ${n > 2 ? 'done' : ''}`;
+
+  // Re-render mobile plans on step 2
+  if (n === 2) renderPlans('mobile-plans', true);
+}
+</script>
+</body>
+</html>
