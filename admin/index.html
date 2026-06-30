@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin — AnimeX</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    /* ── Admin layout ── */
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+      background: var(--c-surface);
+      border-right: 1px solid var(--c-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 260px;
+      overflow-y: auto;
+      z-index: var(--z-nav);
+      transition: transform 0.3s ease;
+    }
+
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-lg);
+      }
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-5) var(--sp-6);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .sidebar-logo-mark {
+      width: 36px; height: 36px;
+      background: var(--c-gradient);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .sidebar-logo-text {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.125rem;
+    }
+
+    .sidebar-logo-badge {
+      font-size: .65rem;
+      background: rgba(124,58,237,0.2);
+      color: var(--c-accent2);
+      padding: 1px 6px;
+      border-radius: var(--r-full);
+      font-weight: 700;
+      margin-left: auto;
+    }
+
+    .sidebar-section {
+      padding: var(--sp-4) var(--sp-4) var(--sp-2);
+    }
+
+    .sidebar-section-title {
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--c-text-3);
+      padding: 0 var(--sp-2);
+      margin-bottom: var(--sp-2);
+    }
+
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-3) var(--sp-4);
+      border-radius: var(--r-lg);
+      font-size: .9rem;
+      font-weight: 500;
+      color: var(--c-text-2);
+      transition: all var(--t-fast);
+      cursor: pointer;
+      margin-bottom: 2px;
+      border: 1px solid transparent;
+    }
+
+    .sidebar-nav-item:hover {
+      background: var(--c-surface2);
+      color: var(--c-text);
+    }
+
+    .sidebar-nav-item.active {
+      background: rgba(124,58,237,0.12);
+      color: var(--c-accent2);
+      border-color: rgba(124,58,237,0.2);
+    }
+
+    .sidebar-nav-item svg {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-badge {
+      margin-left: auto;
+      min-width: 20px;
+      height: 20px;
+      background: var(--c-accent);
+      color: #fff;
+      border-radius: var(--r-full);
+      font-size: .7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: var(--sp-4) var(--sp-4);
+      border-top: 1px solid var(--c-border);
+    }
+
+    .admin-user-chip {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-3);
+      border-radius: var(--r-lg);
+      transition: background var(--t-fast);
+    }
+
+    .admin-user-chip:hover { background: var(--c-surface2); }
+
+    .admin-user-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--c-gradient);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: .875rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    /* Main content */
+    .admin-main {
+      margin-left: 260px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-width: 0;
+      width: calc(100% - 260px);
+    }
+
+    @media (max-width: 1024px) {
+      .admin-main {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+
+    /* Top bar */
+    .admin-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7,7,16,0.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--c-border);
+      padding: var(--sp-4) var(--sp-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-4);
+    }
+
+    .admin-page-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    /* Content area */
+    .admin-content {
+      padding: var(--sp-6) var(--sp-6);
+      flex: 1;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 768px) { .admin-content { padding: var(--sp-4) var(--sp-3); } }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--sp-5);
+      margin-bottom: var(--sp-8);
+    }
+
+    @media (max-width: 1200px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      padding: var(--sp-6);
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--t-base), transform var(--t-base);
+    }
+
+    .stat-card:hover {
+      border-color: var(--c-accent);
+      transform: translateY(-2px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      opacity: 0.06;
+    }
+
+    .stat-card.purple::before { background: var(--c-accent); }
+    .stat-card.green::before  { background: var(--c-success); }
+    .stat-card.blue::before   { background: var(--c-info); }
+    .stat-card.orange::before { background: var(--c-warning); }
+
+    .stat-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: var(--sp-4);
+    }
+
+    .stat-card.purple .stat-icon { background: rgba(124,58,237,0.15); color: var(--c-accent2); }
+    .stat-card.green  .stat-icon { background: rgba(16,185,129,0.15); color: var(--c-success); }
+    .stat-card.blue   .stat-icon { background: rgba(59,130,246,0.15); color: var(--c-info); }
+    .stat-card.orange .stat-icon { background: rgba(245,158,11,0.15); color: var(--c-warning); }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: var(--sp-1);
+    }
+
+    .stat-label {
+      font-size: .8125rem;
+      color: var(--c-text-2);
+    }
+
+    .stat-change {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: .75rem;
+      font-weight: 600;
+      margin-top: var(--sp-2);
+    }
+
+    .stat-change.up   { color: var(--c-success); }
+    .stat-change.down { color: var(--c-error); }
+
+    /* Table */
+    .admin-table-wrap {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+    }
+
+    .admin-table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-5) var(--sp-6);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .admin-table-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .admin-table thead tr {
+      background: var(--c-surface2);
+    }
+
+    .admin-table th {
+      padding: var(--sp-3) var(--sp-5);
+      text-align: left;
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--c-text-3);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .admin-table td {
+      padding: var(--sp-4) var(--sp-5);
+      font-size: .875rem;
+      border-bottom: 1px solid var(--c-border);
+      vertical-align: middle;
+    }
+
+    .admin-table tbody tr:last-child td { border-bottom: none; }
+    .admin-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    .user-row-name {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    .user-mini-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--c-gradient);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    /* Action row buttons */
+    .action-btns {
+      display: flex;
+      gap: var(--sp-2);
+    }
+
+    .action-btn {
+      width: 30px; height: 30px;
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--t-fast);
+    }
+
+    .action-btn.view   { background: rgba(59,130,246,0.12); color: var(--c-info); }
+    .action-btn.edit   { background: rgba(245,158,11,0.12); color: var(--c-warning); }
+    .action-btn.delete { background: rgba(239,68,68,0.12); color: var(--c-error); }
+    .action-btn.approve { background: rgba(16,185,129,0.12); color: var(--c-success); }
+
+    .action-btn:hover { filter: brightness(1.3); transform: scale(1.1); }
+
+    /* Panels (hidden by default) */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* Dual grid */
+    .admin-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-6);
+      margin-bottom: var(--sp-6);
+    }
+
+    @media (max-width: 900px) { .admin-grid-2 { grid-template-columns: 1fr; } }
+
+    /* Chat reply modal */
+    .reply-modal {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* Code generator */
+    .code-display {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-align: center;
+      padding: var(--sp-5);
+      background: var(--c-surface2);
+      border: 2px dashed var(--c-accent);
+      border-radius: var(--r-lg);
+      color: var(--c-accent2);
+      cursor: pointer;
+      transition: all var(--t-base);
+      user-select: all;
+    }
+
+    .code-display:hover { background: rgba(124,58,237,0.1); }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="admin-sidebar" id="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">X</div>
+      <span class="sidebar-logo-text">AnimeX</span>
+      <span class="sidebar-logo-badge">ADMIN</span>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Principal</div>
+
+      <div class="sidebar-nav-item active" data-panel="dashboard">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+
+      <div class="sidebar-nav-item" data-panel="users">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Usuarios
+        <span class="sidebar-badge" id="badge-pending">0</span>
+      </div>
+
+      <div class="sidebar-nav-item" data-panel="messages">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Mensajes
+        <span class="sidebar-badge" id="badge-msgs" style="display:none">!</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Contenido</div>
+
+      <div class="sidebar-nav-item" data-panel="animes">
+        <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+        Animes
+      </div>
+
+      <div class="sidebar-nav-item" data-panel="drives">
+        <svg viewBox="0 0 24 24"><path d="M22 12H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>
+        Almacenamiento
+      </div>
+
+      <div class="sidebar-nav-item" data-panel="codes">
+        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Códigos
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Configuración</div>
+
+      <div class="sidebar-nav-item" data-panel="plans">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Planes
+      </div>
+
+      <a href="../index.html" class="sidebar-nav-item">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Ver sitio
+      </a>
+    </div>
+
+    <!-- User footer -->
+    <div class="sidebar-footer">
+      <div class="admin-user-chip" id="user-chip">
+        <div class="admin-user-avatar" id="admin-avatar">A</div>
+        <div>
+          <div style="font-size:.8125rem;font-weight:600;" id="admin-email">Admin</div>
+          <div style="font-size:.7rem;color:var(--c-text-3);">Administrador</div>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-icon" id="logout-btn" title="Cerrar sesión" style="margin-left:auto;width:30px;height:30px;">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="admin-main">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:var(--sp-4);">
+        <button class="btn btn-ghost btn-icon" id="menu-toggle" style="display:none;">
+          <svg viewBox="0 0 24 24" width="20" height="20"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <h1 class="admin-page-title" id="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        <div style="font-size:.8125rem;color:var(--c-text-2);" id="topbar-date"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PANEL: DASHBOARD                               -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="admin-content">
+      <div class="admin-panel active" id="panel-dashboard">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+
+          <div class="stat-card purple" style="animation:slideUp .4s ease .05s both">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <div class="stat-value" id="stat-users">—</div>
+            <div class="stat-label">Usuarios totales</div>
+            <div class="stat-change up">↑ activos hoy</div>
+          </div>
+
+          <div class="stat-card green" style="animation:slideUp .4s ease .1s both">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="stat-value" id="stat-active">—</div>
+            <div class="stat-label">Usuarios activos</div>
+            <div class="stat-change up">↑ vs mes anterior</div>
+          </div>
+
+          <div class="stat-card orange" style="animation:slideUp .4s ease .15s both">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-label">Pendientes</div>
+            <div class="stat-change">requieren aprobación</div>
+          </div>
+
+          <div class="stat-card blue" style="animation:slideUp .4s ease .2s both">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+            </div>
+            <div class="stat-value" id="stat-animes">—</div>
+            <div class="stat-label">Animes</div>
+            <div class="stat-change">en catálogo</div>
+          </div>
+
+        </div>
+
+        <!-- Recent users + Quick actions -->
+        <div class="admin-grid-2">
+
+          <!-- Pending approvals -->
+          <div class="admin-table-wrap">
+            <div class="admin-table-header">
+              <span class="admin-table-title">Pendientes de aprobación</span>
+              <button class="btn btn-sm btn-ghost" onclick="switchPanel('users')">Ver todos →</button>
+            </div>
+            <div id="pending-list" style="padding:var(--sp-4);">
+              <p class="text-muted text-sm text-faint" style="text-align:center;padding:var(--sp-6) 0;">Cargando...</p>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div>
+            <div class="admin-table-wrap" style="margin-bottom:var(--sp-5);">
+              <div class="admin-table-header">
+                <span class="admin-table-title">Acciones rápidas</span>
+              </div>
+              <div style="padding:var(--sp-4);display:flex;flex-direction:column;gap:var(--sp-3);">
+                <button class="btn btn-secondary btn-full" onclick="switchPanel('codes'); openGenerateCode()">
+                  <svg viewBox="0 0 24 24" width="16" height="16"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  Generar código de activación
+                </button>
+                <button class="btn btn-secondary btn-full" onclick="switchPanel('animes'); document.getElementById('add-anime-btn').click()">
+                  <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  Agregar nuevo anime
+                </button>
+                <button class="btn btn-secondary btn-full" onclick="switchPanel('drives'); document.getElementById('add-drive-btn').click()">
+                  <svg viewBox="0 0 24 24" width="16" height="16"><path d="M22 12H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+                  Conectar Google Drive
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- PANEL: USERS                                   -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div class="admin-panel" id="panel-users">
+        <div class="admin-table-wrap">
+          <div class="admin-table-header">
+            <span class="admin-table-title">Usuarios</span>
+            <div style="display:flex;gap:var(--sp-3);">
+              <div class="input-wrap" style="width:220px;">
+                <svg class="input-icon" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="input-field input-sm" id="user-search" placeholder="Buscar usuario..." style="padding-left:2.5em;padding-top:.5em;padding-bottom:.5em;font-size:.875rem;" />
+              </div>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Plan</th>
+                  <th>Estado</th>
+                  <th>Registro</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:var(--sp-8);color:var(--c-text-3);">Cargando usuarios...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- PANEL: MESSAGES                                -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div class="admin-panel" id="panel-messages">
+        <div class="admin-grid-2" style="height:calc(100vh - 140px);">
+
+          <!-- User list -->
+          <div class="admin-table-wrap" style="overflow-y:auto;">
+            <div class="admin-table-header">
+              <span class="admin-table-title">Conversaciones</span>
+            </div>
+            <div id="conversations-list" style="padding:var(--sp-2);">
+              <p class="text-faint text-sm" style="padding:var(--sp-6);text-align:center;">Cargando...</p>
+            </div>
+          </div>
+
+          <!-- Chat area -->
+          <div class="admin-table-wrap" style="display:flex;flex-direction:column;overflow:hidden;">
+            <div class="admin-table-header">
+              <span class="admin-table-title" id="chat-user-name">Selecciona una conversación</span>
+            </div>
+            <div id="admin-chat-messages" style="flex:1;overflow-y:auto;padding:var(--sp-4);display:flex;flex-direction:column;gap:var(--sp-3);">
+              <p class="text-faint text-sm" style="text-align:center;padding:var(--sp-8) 0;">Selecciona un usuario para ver la conversación</p>
+            </div>
+            <div style="border-top:1px solid var(--c-border);padding:var(--sp-3) var(--sp-4);display:flex;gap:var(--sp-3);">
+              <input type="text" class="input-field" id="admin-msg-input" placeholder="Responder..." style="font-size:.875rem;" />
+              <button class="btn btn-primary" id="admin-send-btn" disabled>
+                <svg viewBox="0 0 24 24" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- PANEL: ANIMES                                  -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div class="admin-panel" id="panel-animes">
+        <div class="admin-table-wrap">
+          <div class="admin-table-header">
+            <span class="admin-table-title">Catálogo de Anime</span>
+            <button class="btn btn-primary btn-sm" id="add-anime-btn">
+              <svg viewBox="0 0 24 24" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar anime
+            </button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Anime</th>
+                  <th>Géneros</th>
+                  <th>Estado</th>
+                  <th>Temporadas</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="animes-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:var(--sp-8);color:var(--c-text-3);">Sin animes. Agrega el primero.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- PANEL: DRIVES                                  -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div class="admin-panel" id="panel-drives">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-6);">
+          <div>
+            <h2 style="font-family:var(--font-display);font-weight:700;margin-bottom:4px;">Google Drive</h2>
+            <p class="text-muted text-sm">Gestiona las cuentas de almacenamiento conectadas</p>
+          </div>
+          <button class="btn btn-primary" id="add-drive-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Conectar Drive
+          </button>
+        </div>
+        <div id="drives-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--sp-5);">
+          <p class="text-faint text-sm" style="grid-column:1/-1;text-align:center;padding:var(--sp-8) 0;">Sin drives conectados</p>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- PANEL: CODES                                   -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div class="admin-panel" id="panel-codes">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-6);">
+          <div>
+            <h2 style="font-family:var(--font-display);font-weight:700;margin-bottom:4px;">Códigos de Activación</h2>
+            <p class="text-muted text-sm">Genera y gestiona los códigos de activación</p>
+          </div>
+          <button class="btn btn-primary" id="gen-code-btn" onclick="openGenerateCode()">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Generar código
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Plan</th>
+                <th>Usuario</th>
+                <th>Estado</th>
+                <th>Expira</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="codes-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:var(--sp-8);color:var(--c-text-3);">Sin códigos generados</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- PANEL: PLANS                                   -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div class="admin-panel" id="panel-plans">
+        <div style="margin-bottom:var(--sp-6);">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div><h2 style="font-family:var(--font-display);font-weight:700;margin-bottom:4px;">Planes de Suscripción</h2><p class="text-muted text-sm">Edita precios y características de cada plan</p></div><button class="btn btn-primary btn-sm" onclick="openPlanModal(null)">+ Nuevo plan</button></div>
+        </div>
+        <div id="plans-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--sp-5);">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+<!-- Plan Edit Modal -->
+<div class="overlay" id="plan-modal">
+  <div class="card-glass anim-scale-in" style="width:100%;max-width:520px;padding:var(--sp-8);max-height:90vh;overflow-y:auto;">
+    <h3 id="plan-modal-title" style="font-family:var(--font-display);font-weight:700;font-size:1.125rem;margin-bottom:var(--sp-6);">Editar Plan</h3>
+    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group"><label class="input-label">Nombre</label>
+          <input type="text" class="input-field" id="pm-name" placeholder="Premium" /></div>
+        <div class="input-group"><label class="input-label">Precio USD/mes</label>
+          <input type="number" class="input-field" id="pm-price" placeholder="9.99" step="0.01" /></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group"><label class="input-label">Perfiles</label>
+          <input type="number" class="input-field" id="pm-profiles" value="1" min="1" max="10" /></div>
+        <div class="input-group"><label class="input-label">Calidad</label>
+          <select class="input-field" id="pm-quality">
+            <option>HD</option><option>Full HD</option><option>4K</option>
+          </select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group"><label class="input-label">Pantallas</label>
+          <input type="number" class="input-field" id="pm-screens" value="1" min="1" max="6" /></div>
+        <div class="input-group"><label class="input-label">Días de vigencia</label>
+          <input type="number" class="input-field" id="pm-days" value="30" min="1" /></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group"><label class="input-label">Prefijo de código</label>
+          <input type="text" class="input-field" id="pm-prefix" placeholder="PREM" maxlength="6"
+            oninput="this.value=this.value.toUpperCase()" /></div>
+        <div class="input-group"><label class="input-label">Color</label>
+          <input type="color" class="input-field" id="pm-color" value="#7c3aed" style="height:44px;padding:4px 8px;cursor:pointer;" /></div>
+      </div>
+      <div class="input-group"><label class="input-label">Características (una por línea)</label>
+        <textarea class="input-field" id="pm-features" rows="5"
+          placeholder="3 perfiles&#10;Calidad Full HD&#10;Sin anuncios"></textarea></div>
+      <label style="display:flex;align-items:center;gap:var(--sp-3);cursor:pointer;font-size:.9rem;font-weight:500;">
+        <input type="checkbox" id="pm-popular" style="width:16px;height:16px;accent-color:var(--c-accent);" />
+        Marcar como "Más popular"
+      </label>
+    </div>
+    <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-6);">
+      <button class="btn btn-ghost btn-full" onclick="document.getElementById('plan-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="save-plan-btn"><span class="btn-text">Guardar plan</span></button>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ── MODALS ── -->
+
+<!-- Approve user / Generate code modal -->
+<div class="overlay" id="code-modal">
+  <div class="card-glass reply-modal anim-scale-in" style="padding:var(--sp-8);">
+    <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin-bottom:var(--sp-6);">Generar Código de Activación</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);margin-bottom:var(--sp-5);">
+      <div class="input-group">
+        <label class="input-label">Plan</label>
+        <select class="input-field" id="code-plan-select">
+          <option value="basic">Básico</option>
+          <option value="standard" selected>Estándar</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Usuario (opcional)</label>
+        <input type="text" class="input-field" id="code-user-id" placeholder="UID del usuario" />
+      </div>
+    </div>
+
+    <div class="input-group" style="margin-bottom:var(--sp-5);">
+      <label class="input-label">Duración (días)</label>
+      <input type="number" class="input-field" id="code-duration" value="30" min="1" max="365" />
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" id="generate-code-btn" style="margin-bottom:var(--sp-4);">
+      <span class="btn-text">Generar código</span>
+    </button>
+
+    <div id="generated-code-wrap" style="display:none;margin-bottom:var(--sp-4);">
+      <p class="text-sm text-muted" style="margin-bottom:var(--sp-3);text-align:center;">Código generado (click para copiar)</p>
+      <div class="code-display" id="generated-code" onclick="copyCode()">—</div>
+      <p class="text-xs text-faint" style="text-align:center;margin-top:var(--sp-2);">⚠️ Guarda este código, no podrá recuperarse</p>
+    </div>
+
+    <button class="btn btn-ghost btn-full" onclick="document.getElementById('code-modal').classList.remove('open')">Cerrar</button>
+  </div>
+</div>
+
+<!-- Add anime modal -->
+<div class="overlay" id="anime-modal">
+  <div class="card-glass anim-scale-in" style="width:100%;max-width:600px;padding:var(--sp-8);max-height:90vh;overflow-y:auto;">
+    <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin-bottom:var(--sp-6);">Agregar Anime</h3>
+
+    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <div class="input-group">
+        <label class="input-label">Título</label>
+        <input type="text" class="input-field" id="anime-title" placeholder="Nombre del anime" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">Sinopsis</label>
+        <textarea class="input-field" id="anime-synopsis" rows="3" placeholder="Descripción del anime..."></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group">
+          <label class="input-label">Año</label>
+          <input type="number" class="input-field" id="anime-year" placeholder="2024" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Estado</label>
+          <select class="input-field" id="anime-status">
+            <option value="ongoing">En emisión</option>
+            <option value="completed">Completado</option>
+            <option value="upcoming">Próximamente</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Géneros (separados por coma)</label>
+        <input type="text" class="input-field" id="anime-genres" placeholder="Acción, Aventura, Fantasía" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">Estudio</label>
+        <input type="text" class="input-field" id="anime-studio" placeholder="MAPPA, Ufotable, etc." />
+      </div>
+      <div class="input-group">
+        <label class="input-label">URL de Portada</label>
+        <input type="url" class="input-field" id="anime-cover" placeholder="https://..." />
+      </div>
+      <div class="input-group">
+        <label class="input-label">URL de Banner</label>
+        <input type="url" class="input-field" id="anime-banner" placeholder="https://..." />
+      </div>
+      <div class="input-group">
+        <label class="input-label">URL del Trailer (YouTube embed)</label>
+        <input type="url" class="input-field" id="anime-trailer" placeholder="https://www.youtube.com/embed/..." />
+      </div>
+    </div>
+
+    <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-6);">
+      <button class="btn btn-ghost btn-full" onclick="document.getElementById('anime-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="save-anime-btn">
+        <span class="btn-text">Guardar anime</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add drive modal -->
+<div class="overlay" id="drive-modal">
+  <div class="card-glass anim-scale-in" style="width:100%;max-width:480px;padding:var(--sp-8);">
+    <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin-bottom:var(--sp-2);">Conectar Google Drive</h3>
+    <p class="text-muted text-sm" style="margin-bottom:var(--sp-6);">Agrega un nuevo Drive para almacenar videos de anime.</p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <div class="input-group">
+        <label class="input-label">Nombre del Drive</label>
+        <input type="text" class="input-field" id="drive-name" placeholder="Drive Principal, Drive 2, etc." />
+      </div>
+      <div class="input-group">
+        <label class="input-label">ID de la carpeta raíz</label>
+        <input type="text" class="input-field" id="drive-folder-id" placeholder="ID de la carpeta en Drive" />
+        <span class="text-xs text-faint" style="margin-top:4px;">El ID aparece en la URL de la carpeta: /drive/folders/<strong>ESTE_ID</strong></span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Capacidad total (GB)</label>
+        <input type="number" class="input-field" id="drive-capacity" value="15" min="1" />
+      </div>
+    </div>
+
+    <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-6);">
+      <button class="btn btn-ghost btn-full" onclick="document.getElementById('drive-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="save-drive-btn">
+        <span class="btn-text">Conectar Drive</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Plan edit/create modal -->
+<div class="overlay" id="plan-modal">
+  <div class="card-glass anim-scale-in" style="width:100%;max-width:520px;padding:var(--sp-8);max-height:90vh;overflow-y:auto;">
+    <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin-bottom:var(--sp-6);" id="plan-modal-title">Editar Plan</h3>
+
+    <input type="hidden" id="plan-id-field" />
+
+    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group">
+          <label class="input-label">Nombre del plan</label>
+          <input type="text" class="input-field" id="plan-name-field" placeholder="Ej: Premium" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Precio (USD/mes)</label>
+          <input type="number" class="input-field" id="plan-price-field" placeholder="9.99" step="0.01" min="0" />
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group">
+          <label class="input-label">Perfiles</label>
+          <input type="number" class="input-field" id="plan-profiles-field" value="1" min="1" max="10" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Calidad</label>
+          <select class="input-field" id="plan-quality-field">
+            <option value="SD">SD</option>
+            <option value="HD">HD</option>
+            <option value="Full HD">Full HD</option>
+            <option value="4K">4K</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Pantallas</label>
+          <input type="number" class="input-field" id="plan-screens-field" value="1" min="1" max="8" />
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);">
+        <div class="input-group">
+          <label class="input-label">Duración (días)</label>
+          <input type="number" class="input-field" id="plan-duration-field" value="30" min="1" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Color</label>
+          <input type="color" class="input-field" id="plan-color-field" value="#7c3aed" style="height:46px;padding:4px 8px;cursor:pointer;" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Características (una por línea)</label>
+        <textarea class="input-field" id="plan-features-field" rows="4" placeholder="3 perfiles&#10;Calidad Full HD&#10;Sin anuncios"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-6);">
+      <button class="btn btn-ghost" id="delete-plan-btn" style="color:var(--c-error);">Eliminar</button>
+      <button class="btn btn-ghost btn-full" onclick="document.getElementById('plan-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="save-plan-btn"><span class="btn-text">Guardar plan</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { auth, db } from '../assets/js/core/firebase.js';
+import { onAuthChange, getCurrentUserData, logoutUser } from '../assets/js/core/auth.js';
+import { showToast } from '../assets/js/components/toast.js';
+import { getPlans } from '../assets/js/services/planService.js';
+import { adminReply, listenMessages } from '../assets/js/services/chatService.js';
+import {
+  collection, getDocs, query, where, orderBy,
+  doc, setDoc, updateDoc, addDoc, serverTimestamp, getDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // Path helper — works on localhost AND GitHub Pages
+  const ROOT = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? '/'
+    : '/AnimeX/';
+  const goTo = path => { window.location.href = ROOT + path; };
+
+// ── Auth guard (admin only)
+onAuthChange(async (user) => {
+  if (!user) { goTo('login.html'); return; }
+  const data = await getCurrentUserData();
+  if (!data || data.role !== 'admin') {
+    showToast('Acceso denegado', 'error');
+    setTimeout(() => goTo('login.html'), 1500);
+    return;
+  }
+
+  document.getElementById('admin-email').textContent = data.email;
+  document.getElementById('admin-avatar').textContent = data.email[0].toUpperCase();
+  loadDashboard();
+  loadUsers();
+  loadAnimes();
+  loadDrives();
+  loadCodes();
+  loadPlansPanel();
+});
+
+// ── Date
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('es', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+// ── Navigation
+window.switchPanel = function(panel) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+  document.getElementById(`panel-${panel}`).classList.add('active');
+  document.querySelector(`[data-panel="${panel}"]`)?.classList.add('active');
+  const titles = { dashboard: 'Dashboard', users: 'Usuarios', messages: 'Mensajes', animes: 'Animes', drives: 'Almacenamiento', codes: 'Códigos', plans: 'Planes' };
+  document.getElementById('page-title').textContent = titles[panel] || panel;
+  if (panel === 'messages') loadConversations();
+};
+
+document.querySelectorAll('.sidebar-nav-item[data-panel]').forEach(item => {
+  item.addEventListener('click', () => switchPanel(item.dataset.panel));
+});
+
+// ── Dashboard
+async function loadDashboard() {
+  try {
+    const usersSnap = await getDocs(collection(db, 'users'));
+    const all = usersSnap.docs.map(d => d.data());
+    const active  = all.filter(u => u.status === 'active').length;
+    const pending = all.filter(u => u.status === 'pending').length;
+
+    document.getElementById('stat-users').textContent   = all.length;
+    document.getElementById('stat-active').textContent  = active;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('badge-pending').textContent = pending;
+
+    const animesSnap = await getDocs(collection(db, 'animes'));
+    document.getElementById('stat-animes').textContent = animesSnap.size;
+
+    // Pending list
+    const pendingUsers = all.filter(u => u.status === 'pending');
+    renderPendingList(pendingUsers);
+  } catch (e) { console.error(e); }
+}
+
+function renderPendingList(users) {
+  const container = document.getElementById('pending-list');
+  if (!users.length) {
+    container.innerHTML = '<p class="text-faint text-sm" style="text-align:center;padding:var(--sp-6) 0;">Sin usuarios pendientes</p>';
+    return;
+  }
+  container.innerHTML = users.map(u => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-3) 0;border-bottom:1px solid var(--c-border);">
+      <div class="user-row-name">
+        <div class="user-mini-avatar">${u.email[0].toUpperCase()}</div>
+        <div>
+          <div style="font-size:.875rem;font-weight:500;">${u.email}</div>
+          <div class="text-xs text-faint">Plan: ${u.planId || '—'}</div>
+        </div>
+      </div>
+      <button class="btn btn-sm action-btn approve" onclick="openApproveUser('${u.email}')">
+        <svg viewBox="0 0 24 24" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+// ── Users
+async function loadUsers() {
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderUsersTable(users);
+  } catch (e) { console.error(e); }
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:var(--sp-8);color:var(--c-text-3);">Sin usuarios</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => {
+    const statusColors = { active: 'success', pending: 'warning', suspended: 'error' };
+    const statusLabels = { active: 'Activo', pending: 'Pendiente', suspended: 'Suspendido' };
+    const date = u.createdAt?.toDate?.()?.toLocaleDateString('es') || '—';
+    return `
+      <tr>
+        <td>
+          <div class="user-row-name">
+            <div class="user-mini-avatar">${u.email[0].toUpperCase()}</div>
+            <div>
+              <div style="font-weight:500;">${u.email}</div>
+              <div class="text-xs text-faint">${u.id.slice(0,8)}...</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge badge-accent">${u.planId || '—'}</span></td>
+        <td><span class="badge badge-${statusColors[u.status] || 'warning'}">${statusLabels[u.status] || u.status}</span></td>
+        <td class="text-sm text-muted">${date}</td>
+        <td>
+          <div class="action-btns">
+            <button class="action-btn approve" title="Aprobar / Generar código" onclick="openApproveUser('${u.id}','${u.planId}')">
+              <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="action-btn view" title="Ver mensajes" onclick="switchPanel('messages');openConversation('${u.id}','${u.email}')">
+              <svg viewBox="0 0 24 24" width="13" height="13"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </button>
+            <button class="action-btn delete" title="Suspender" onclick="suspendUser('${u.id}')">
+              <svg viewBox="0 0 24 24" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Search
+document.getElementById('user-search').addEventListener('input', async (e) => {
+  const q = e.target.value.toLowerCase();
+  const snap = await getDocs(collection(db, 'users'));
+  const users = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.email.toLowerCase().includes(q));
+  renderUsersTable(users);
+});
+
+// ── Approve / Generate code
+let approveForUserId = null;
+
+window.openApproveUser = function(userId, planId) {
+  approveForUserId = userId;
+  if (planId) document.getElementById('code-plan-select').value = planId;
+  document.getElementById('code-user-id').value = userId;
+  document.getElementById('generated-code-wrap').style.display = 'none';
+  document.getElementById('code-modal').classList.add('open');
+};
+
+window.openGenerateCode = function() {
+  approveForUserId = null;
+  document.getElementById('code-user-id').value = '';
+  document.getElementById('generated-code-wrap').style.display = 'none';
+  document.getElementById('code-modal').classList.add('open');
+};
+
+document.getElementById('generate-code-btn').addEventListener('click', async () => {
+  const plan     = document.getElementById('code-plan-select').value;
+  const userId   = document.getElementById('code-user-id').value.trim() || null;
+  const days     = parseInt(document.getElementById('code-duration').value) || 30;
+  const btn      = document.getElementById('generate-code-btn');
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    // Generar código único
+    const prefixes = { basic: 'BSC', standard: 'STD', premium: 'PREM', vip: 'VIP' };
+    const prefix = prefixes[plan] || 'STD';
+    const rand4  = () => Math.random().toString(36).substring(2, 6).toUpperCase();
+    const code   = `${prefix}-${rand4()}-${rand4()}`;
+
+    const expires = new Date();
+    expires.setDate(expires.getDate() + days);
+
+    // Guardar código en Firestore
+    await setDoc(doc(db, 'activationCodes', code), {
+      planId:    plan,
+      userId:    userId || null,
+      used:      false,
+      createdAt: serverTimestamp(),
+      expiresAt: expires,
+      createdBy: auth.currentUser.uid,
+    });
+
+    // Si hay usuario vinculado — notificar por chat
+    if (userId) {
+      try {
+        await updateDoc(doc(db, 'users', userId), { codeGenerated: true });
+        const { adminReply } = await import('../assets/js/services/chatService.js');
+        await adminReply(userId,
+          `✅ Tu pago fue verificado.\n\nTu código de activación es:\n\n🔑 ${code}\n\nIngresa este código en la página de activación para comenzar. Expira en ${days} días.`
+        );
+        showToast('✅ Código generado y enviado al usuario', 'success');
+      } catch(chatErr) {
+        console.warn('Chat notify failed:', chatErr);
+        showToast('⚠️ Código creado. No se pudo notificar al usuario: ' + chatErr.message, 'warning');
+      }
+    } else {
+      showToast('✅ Código de activación generado', 'success');
+    }
+
+    document.getElementById('generated-code').textContent = code;
+    document.getElementById('generated-code-wrap').style.display = '';
+    loadCodes();
+    loadDashboard();
+
+  } catch (e) {
+    console.error('Error generando código:', e);
+    showToast('❌ Error: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+window.copyCode = function() {
+  const code = document.getElementById('generated-code').textContent;
+  navigator.clipboard.writeText(code);
+  showToast('Código copiado', 'success');
+};
+
+// ── Codes list
+async function loadCodes() {
+  const snap = await getDocs(collection(db, 'activationCodes'));
+  const codes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const tbody = document.getElementById('codes-tbody');
+
+  if (!codes.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:var(--sp-8);color:var(--c-text-3);">Sin códigos generados</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = codes.map(c => {
+    const exp = c.expiresAt?.toDate?.()?.toLocaleDateString('es') || '—';
+    return `
+      <tr>
+        <td><code style="font-family:var(--font-display);font-weight:700;color:var(--c-accent2);font-size:.9rem;">${c.id}</code></td>
+        <td><span class="badge badge-accent">${c.planId}</span></td>
+        <td class="text-sm text-muted">${c.userId ? c.userId.slice(0,12)+'...' : 'Sin asignar'}</td>
+        <td><span class="badge ${c.used ? 'badge-error' : 'badge-success'}">${c.used ? 'Usado' : 'Activo'}</span></td>
+        <td class="text-sm text-muted">${exp}</td>
+        <td>
+          <div class="action-btns">
+            <button class="action-btn view" onclick="navigator.clipboard.writeText('${c.id}');showToast('Copiado','success')" title="Copiar">
+              <svg viewBox="0 0 24 24" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+            <button class="action-btn delete" onclick="deleteCode('${c.id}')" title="Eliminar">
+              <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.deleteCode = async function(code) {
+  if (!confirm('¿Eliminar este código?')) return;
+  await deleteDoc(doc(db, 'activationCodes', code));
+  showToast('Código eliminado', 'success');
+  loadCodes();
+};
+
+// ── Animes
+async function loadAnimes() {
+  const snap = await getDocs(collection(db, 'animes'));
+  const animes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const tbody = document.getElementById('animes-tbody');
+
+  if (!animes.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:var(--sp-8);color:var(--c-text-3);">Sin animes. Agrega el primero.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = animes.map(a => `
+    <tr>
+      <td>
+        <div class="user-row-name">
+          ${a.cover ? `<img src="${a.cover}" style="width:40px;height:56px;object-fit:cover;border-radius:var(--r-sm);" onerror="this.style.display='none'" />` : `<div style="width:40px;height:56px;background:var(--c-surface3);border-radius:var(--r-sm);"></div>`}
+          <div>
+            <div style="font-weight:600;">${a.title}</div>
+            <div class="text-xs text-faint">${a.studio || ''} · ${a.year || ''}</div>
+          </div>
+        </div>
+      </td>
+      <td>${(a.genres || []).slice(0,2).map(g => `<span class="badge badge-accent" style="margin-right:4px;">${g}</span>`).join('')}</td>
+      <td><span class="badge ${a.status === 'completed' ? 'badge-success' : a.status === 'ongoing' ? 'badge-warning' : 'badge-accent'}">${a.status || '—'}</span></td>
+      <td class="text-sm text-muted">${a.seasonCount || 0} temp.</td>
+      <td>
+        <div class="action-btns">
+          <button class="action-btn edit" onclick="editAnime('${a.id}')">
+            <svg viewBox="0 0 24 24" width="13" height="13"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="action-btn delete" onclick="deleteAnime('${a.id}')">
+            <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+document.getElementById('add-anime-btn').addEventListener('click', () => {
+  document.getElementById('anime-modal').classList.add('open');
+});
+
+document.getElementById('save-anime-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-anime-btn');
+  const title = document.getElementById('anime-title').value.trim();
+  if (!title) { showToast('El título es requerido', 'warning'); return; }
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    await addDoc(collection(db, 'animes'), {
+      title,
+      synopsis: document.getElementById('anime-synopsis').value,
+      year: parseInt(document.getElementById('anime-year').value) || null,
+      status: document.getElementById('anime-status').value,
+      genres: document.getElementById('anime-genres').value.split(',').map(g => g.trim()).filter(Boolean),
+      studio: document.getElementById('anime-studio').value,
+      cover: document.getElementById('anime-cover').value,
+      banner: document.getElementById('anime-banner').value,
+      trailer: document.getElementById('anime-trailer').value,
+      seasonCount: 0,
+      episodeCount: 0,
+      views: 0,
+      rating: 0,
+      createdAt: serverTimestamp(),
+    });
+
+    showToast('Anime agregado', 'success');
+    document.getElementById('anime-modal').classList.remove('open');
+    loadAnimes();
+    loadDashboard();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+window.editAnime = function(id) {
+  goTo(`admin/episodes.html?id=${id}`);
+};
+
+window.deleteAnime = async function(id) {
+  if (!confirm('¿Eliminar este anime?')) return;
+  await deleteDoc(doc(db, 'animes', id));
+  showToast('Anime eliminado', 'success');
+  loadAnimes();
+};
+
+// ── Drives
+async function loadDrives() {
+  const snap = await getDocs(collection(db, 'drives'));
+  const drives = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const grid = document.getElementById('drives-grid');
+
+  if (!drives.length) {
+    grid.innerHTML = '<p class="text-faint text-sm" style="grid-column:1/-1;text-align:center;padding:var(--sp-8) 0;">Sin drives conectados. Conecta el primero.</p>';
+    return;
+  }
+
+  grid.innerHTML = drives.map(d => {
+    const used = d.usedGB || 0;
+    const total = d.capacityGB || 15;
+    const pct = Math.min((used / total) * 100, 100).toFixed(0);
+    const color = pct > 90 ? 'var(--c-error)' : pct > 70 ? 'var(--c-warning)' : 'var(--c-success)';
+    return `
+      <div class="card" style="padding:var(--sp-5);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4);">
+          <div style="display:flex;align-items:center;gap:var(--sp-3);">
+            <div style="width:40px;height:40px;background:rgba(59,130,246,0.12);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--c-info);">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path d="M22 12H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:.9375rem;">${d.name}</div>
+              <div class="text-xs text-faint">${d.videoCount || 0} videos</div>
+            </div>
+          </div>
+          <span class="badge ${pct > 90 ? 'badge-error' : pct > 70 ? 'badge-warning' : 'badge-success'}">${pct}%</span>
+        </div>
+        <div style="background:var(--c-surface3);height:6px;border-radius:var(--r-full);overflow:hidden;margin-bottom:var(--sp-2);">
+          <div style="width:${pct}%;height:100%;background:${color};border-radius:var(--r-full);transition:width .5s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;" class="text-xs text-faint">
+          <span>${used} GB usados</span>
+          <span>${total - used} GB libres</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('add-drive-btn').addEventListener('click', () => {
+  document.getElementById('drive-modal').classList.add('open');
+});
+
+document.getElementById('save-drive-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-drive-btn');
+  const name = document.getElementById('drive-name').value.trim();
+  const folderId = document.getElementById('drive-folder-id').value.trim();
+  const cap = parseFloat(document.getElementById('drive-capacity').value) || 15;
+
+  if (!name || !folderId) { showToast('Completa todos los campos', 'warning'); return; }
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    await addDoc(collection(db, 'drives'), {
+      name, folderId, capacityGB: cap,
+      usedGB: 0, videoCount: 0, active: true,
+      createdAt: serverTimestamp(),
+    });
+    showToast('Drive conectado', 'success');
+    document.getElementById('drive-modal').classList.remove('open');
+    loadDrives();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+// ── Plans panel
+async function loadPlansPanel() {
+  const plans = await getPlans();
+  const grid = document.getElementById('plans-grid');
+  grid.innerHTML = plans.map(p => `
+    <div class="card" style="padding:var(--sp-6);border-color:${p.color || '#7c3aed'}33;position:relative;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-4);">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:1.125rem;color:${p.color || '#7c3aed'}">${p.name}</span>
+        <span style="font-family:var(--font-display);font-weight:800;font-size:1.25rem;">$${p.price}<span style="font-size:.75rem;font-weight:400;color:var(--c-text-2)">/mes</span></span>
+      </div>
+      <ul style="display:flex;flex-direction:column;gap:var(--sp-2);margin-bottom:var(--sp-4);">
+        ${(p.features||[]).map(f => `<li style="font-size:.875rem;color:var(--c-text-2);display:flex;gap:var(--sp-2);align-items:center;"><span style="color:var(--c-success)">✓</span>${f}</li>`).join('')}
+      </ul>
+      <div style="display:flex;gap:var(--sp-2);">
+        <button class="btn btn-sm btn-secondary btn-full" onclick="openEditPlan('${p.id}')">
+          <svg viewBox="0 0 24 24" width="13" height="13"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Editar plan
+        </button>
+      </div>
+    </div>
+  `).join('') + `
+    <div class="card" style="padding:var(--sp-6);border:2px dashed var(--c-border2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-3);min-height:160px;cursor:pointer;" onclick="openEditPlan(null)">
+      <svg viewBox="0 0 24 24" width="32" height="32" style="color:var(--c-text-3)"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span style="font-size:.9rem;color:var(--c-text-3);">Crear nuevo plan</span>
+    </div>
+  `;
+}
+
+// Abre modal de edición de plan (null = nuevo)
+window.openEditPlan = async function(planId) {
+  const modal = document.getElementById('plan-modal');
+  const isNew = !planId;
+  document.getElementById('plan-modal-title').textContent = isNew ? 'Nuevo Plan' : 'Editar Plan';
+  document.getElementById('delete-plan-btn').style.display = isNew ? 'none' : '';
+  document.getElementById('plan-id-field').value = planId || '';
+
+  if (!isNew) {
+    const snap = await getDoc(doc(db, 'plans', planId));
+    const p = snap.exists() ? snap.data() : null;
+    if (p) {
+      document.getElementById('plan-name-field').value   = p.name || '';
+      document.getElementById('plan-price-field').value  = p.price || '';
+      document.getElementById('plan-profiles-field').value = p.profiles || 1;
+      document.getElementById('plan-quality-field').value  = p.quality || 'HD';
+      document.getElementById('plan-screens-field').value  = p.simultaneousScreens || 1;
+      document.getElementById('plan-color-field').value    = p.color || '#7c3aed';
+      document.getElementById('plan-features-field').value = (p.features || []).join('\n');
+      document.getElementById('plan-duration-field').value = p.durationDays || 30;
+    }
+  } else {
+    // Valores por defecto para nuevo plan
+    document.getElementById('plan-name-field').value    = '';
+    document.getElementById('plan-price-field').value   = '';
+    document.getElementById('plan-profiles-field').value = 1;
+    document.getElementById('plan-quality-field').value  = 'HD';
+    document.getElementById('plan-screens-field').value  = 1;
+    document.getElementById('plan-color-field').value    = '#7c3aed';
+    document.getElementById('plan-features-field').value = '';
+    document.getElementById('plan-duration-field').value = 30;
+  }
+  modal.classList.add('open');
+};
+
+document.getElementById('save-plan-btn').addEventListener('click', async () => {
+  const btn     = document.getElementById('save-plan-btn');
+  const name    = document.getElementById('plan-name-field').value.trim();
+  const price   = parseFloat(document.getElementById('plan-price-field').value) || 0;
+  const planId  = document.getElementById('plan-id-field').value.trim()
+                  || name.toLowerCase().replace(/\s+/g, '_');
+
+  if (!name) { showToast('El nombre es requerido', 'warning'); return; }
+
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    const featuresRaw = document.getElementById('plan-features-field').value;
+    const features = featuresRaw.split('\n').map(f => f.trim()).filter(Boolean);
+
+    await setDoc(doc(db, 'plans', planId), {
+      name,
+      price,
+      profiles:           parseInt(document.getElementById('plan-profiles-field').value) || 1,
+      quality:            document.getElementById('plan-quality-field').value,
+      simultaneousScreens: parseInt(document.getElementById('plan-screens-field').value) || 1,
+      color:              document.getElementById('plan-color-field').value,
+      features,
+      durationDays:       parseInt(document.getElementById('plan-duration-field').value) || 30,
+      currency:           'USD',
+    }, { merge: true });
+
+    showToast('Plan guardado', 'success');
+    document.getElementById('plan-modal').classList.remove('open');
+    loadPlansPanel();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+});
+
+document.getElementById('delete-plan-btn').addEventListener('click', async () => {
+  const planId = document.getElementById('plan-id-field').value;
+  if (!planId || !confirm(`¿Eliminar el plan "${planId}"? Los usuarios con este plan quedarán sin plan asignado.`)) return;
+  await deleteDoc(doc(db, 'plans', planId));
+  showToast('Plan eliminado', 'warning');
+  document.getElementById('plan-modal').classList.remove('open');
+  loadPlansPanel();
+});
+
+// ── Messages
+let selectedUserId = null;
+let selectedUserEmail = null;
+let unsubscribeChat = null;
+
+async function loadConversations() {
+  const snap = await getDocs(collection(db, 'users'));
+  const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const list = document.getElementById('conversations-list');
+
+  list.innerHTML = users.map(u => `
+    <div class="sidebar-nav-item" onclick="openConversation('${u.id}','${u.email}')" id="conv-${u.id}">
+      <div class="user-mini-avatar">${u.email[0].toUpperCase()}</div>
+      <div style="overflow:hidden;">
+        <div style="font-size:.8125rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.email}</div>
+        <div class="text-xs text-faint">${u.status}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.openConversation = function(uid, email) {
+  selectedUserId = uid;
+  selectedUserEmail = email;
+  document.getElementById('chat-user-name').textContent = email;
+  document.getElementById('admin-send-btn').disabled = false;
+
+  document.querySelectorAll('#conversations-list .sidebar-nav-item').forEach(i => i.classList.remove('active'));
+  document.getElementById(`conv-${uid}`)?.classList.add('active');
+
+  if (unsubscribeChat) unsubscribeChat();
+
+  const { listenMessages } = window;
+
+  // Import and listen
+  import('../assets/js/services/chatService.js').then(({ listenMessages: listenMsgs }) => {
+    unsubscribeChat = listenMsgs(uid, (msgs) => {
+      const container = document.getElementById('admin-chat-messages');
+      if (!msgs.length) {
+        container.innerHTML = '<p class="text-faint text-sm" style="text-align:center;padding:var(--sp-6) 0;">Sin mensajes aún</p>';
+        return;
+      }
+      container.innerHTML = msgs.map(m => {
+        const time = m.createdAt?.toDate?.()?.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }) || '';
+        return `
+          <div style="display:flex;flex-direction:column;align-items:${m.from === 'admin' ? 'flex-end' : 'flex-start'};">
+            <div style="max-width:80%;padding:var(--sp-3) var(--sp-4);border-radius:var(--r-lg);font-size:.875rem;background:${m.from === 'admin' ? 'var(--c-accent)' : 'var(--c-surface3)'};color:${m.from === 'admin' ? '#fff' : 'var(--c-text)'};word-break:break-word;">
+              ${m.text || ''}
+              ${m.imageBase64 ? `<img src="${m.imageBase64}" style="max-width:180px;border-radius:var(--r-sm);margin-top:var(--sp-2);" />` : ''}
+            </div>
+            <div class="text-xs text-faint" style="margin-top:4px;">${time}</div>
+          </div>
+        `;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    });
+  });
+};
+
+document.getElementById('admin-send-btn').addEventListener('click', async () => {
+  if (!selectedUserId) return;
+  const input = document.getElementById('admin-msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('admin-send-btn');
+  btn.disabled = true;
+
+  try {
+    await adminReply(selectedUserId, text);
+    input.value = '';
+  } catch (e) {
+    showToast('Error al enviar', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('admin-msg-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('admin-send-btn').click();
+  }
+});
+
+// ── Suspend user
+window.suspendUser = async function(uid) {
+  if (!confirm('¿Suspender este usuario?')) return;
+  await updateDoc(doc(db, 'users', uid), { status: 'suspended' });
+  showToast('Usuario suspendido', 'warning');
+  loadUsers();
+};
+
+// ── Logout
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await logoutUser();
+  goTo('login.html');
+});
+
+// Close modals on overlay click
+document.querySelectorAll('.overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// Make showToast global for inline onclick
+window.showToast = showToast;
+</script>
+</body>
+</html>
+
+<script type="module">
+// ── Plans Editor (module separado para evitar conflictos)
+import { db } from '../assets/js/core/firebase.js';
+import { showToast } from '../assets/js/components/toast.js';
+import { doc, setDoc, deleteDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getPlans } from '../assets/js/services/planService.js';
+
+let _editingPlanId = null;
+
+// Reemplaza loadPlansPanel con versión editable
+window.loadPlansPanel = async function() {
+  const plans = await getPlans();
+  const grid  = document.getElementById('plans-grid');
+  if (!grid) return;
+
+  grid.innerHTML = plans.length ? plans.map(p => `
+    <div class="card" style="padding:var(--sp-6);border-color:${p.color||'#7c3aed'}44;position:relative;">
+      ${p.popular ? '<span class="badge badge-popular" style="position:absolute;top:var(--sp-3);right:var(--sp-3);">⭐ Popular</span>' : ''}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-4);">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:1.125rem;color:${p.color||'#7c3aed'}">${p.name}</span>
+        <span style="font-family:var(--font-display);font-weight:800;font-size:1.25rem;">$${p.price}<span style="font-size:.75rem;font-weight:400;color:var(--c-text-2)">/mes</span></span>
+      </div>
+      <ul style="display:flex;flex-direction:column;gap:var(--sp-2);margin-bottom:var(--sp-5);">
+        ${(p.features||[]).map(f=>`<li style="font-size:.875rem;color:var(--c-text-2);display:flex;gap:var(--sp-2);"><span style="color:var(--c-success)">✓</span>${f}</li>`).join('')}
+      </ul>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:var(--sp-2);">
+        <button class="btn btn-secondary btn-sm" onclick="openPlanModal('${p.id}')">✏️ Editar</button>
+        <button class="btn btn-sm" style="background:rgba(239,68,68,.12);color:var(--c-error);padding:0 12px;" onclick="deletePlan('${p.id}')">🗑</button>
+      </div>
+    </div>
+  `).join('') : '<p class="text-faint text-sm" style="grid-column:1/-1;text-align:center;padding:var(--sp-8) 0;">Sin planes. Crea el primero.</p>';
+};
+
+window.openPlanModal = async function(planId) {
+  _editingPlanId = planId;
+  document.getElementById('plan-modal-title').textContent = planId ? 'Editar Plan' : 'Nuevo Plan';
+
+  if (planId) {
+    const plans = await getPlans();
+    const p     = plans.find(x => x.id === planId);
+    if (p) {
+      document.getElementById('pm-name').value     = p.name    || '';
+      document.getElementById('pm-price').value    = p.price   || '';
+      document.getElementById('pm-profiles').value = p.profiles || 1;
+      document.getElementById('pm-quality').value  = p.quality  || 'HD';
+      document.getElementById('pm-screens').value  = p.simultaneousScreens || 1;
+      document.getElementById('pm-days').value     = p.durationDays || 30;
+      document.getElementById('pm-prefix').value   = p.codePrefix   || '';
+      document.getElementById('pm-color').value    = p.color || '#7c3aed';
+      document.getElementById('pm-features').value = (p.features||[]).join('\n');
+      document.getElementById('pm-popular').checked = !!p.popular;
+    }
+  } else {
+    ['pm-name','pm-price','pm-prefix','pm-features'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('pm-profiles').value = 1;
+    document.getElementById('pm-quality').value  = 'HD';
+    document.getElementById('pm-screens').value  = 1;
+    document.getElementById('pm-days').value     = 30;
+    document.getElementById('pm-color').value    = '#7c3aed';
+    document.getElementById('pm-popular').checked = false;
+  }
+
+  document.getElementById('plan-modal').classList.add('open');
+};
+
+document.getElementById('save-plan-btn')?.addEventListener('click', async () => {
+  const btn      = document.getElementById('save-plan-btn');
+  const name     = document.getElementById('pm-name').value.trim();
+  const price    = parseFloat(document.getElementById('pm-price').value);
+  if (!name || isNaN(price)) { showToast('Nombre y precio son requeridos', 'warning'); return; }
+
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    const id = _editingPlanId || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    await setDoc(doc(db,'plans',id), {
+      name, price,
+      profiles:           parseInt(document.getElementById('pm-profiles').value) || 1,
+      quality:            document.getElementById('pm-quality').value,
+      simultaneousScreens:parseInt(document.getElementById('pm-screens').value) || 1,
+      durationDays:       parseInt(document.getElementById('pm-days').value) || 30,
+      codePrefix:         document.getElementById('pm-prefix').value || name.slice(0,3).toUpperCase(),
+      color:              document.getElementById('pm-color').value,
+      features:           document.getElementById('pm-features').value.split('\n').map(l=>l.trim()).filter(Boolean),
+      popular:            document.getElementById('pm-popular').checked,
+      currency:           'USD',
+      updatedAt:          serverTimestamp(),
+    }, { merge: true });
+
+    showToast(`Plan ${name} ${_editingPlanId?'actualizado':'creado'}`, 'success');
+    document.getElementById('plan-modal').classList.remove('open');
+    await window.loadPlansPanel();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+});
+
+window.deletePlan = async function(id) {
+  if (!confirm('¿Eliminar este plan?')) return;
+  await deleteDoc(doc(db,'plans',id));
+  showToast('Plan eliminado','success');
+  await window.loadPlansPanel();
+};
+</script>

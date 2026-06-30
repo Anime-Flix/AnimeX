@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Episodios — Admin AnimeX</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <style>
+    body { padding: var(--sp-6); max-width: 1000px; margin: 0 auto; padding-top: 80px; }
+
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(7,7,16,0.97); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--c-border);
+      padding: var(--sp-4) var(--sp-6);
+      display: flex; align-items: center; gap: var(--sp-4);
+    }
+
+    .section-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      padding: var(--sp-6);
+      margin-bottom: var(--sp-6);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-weight: 700; font-size: 1.125rem;
+      margin-bottom: var(--sp-5);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .ep-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--sp-4);
+    }
+
+    .season-block {
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      margin-bottom: var(--sp-5);
+    }
+
+    .season-block-header {
+      padding: var(--sp-4) var(--sp-5);
+      background: var(--c-surface3);
+      border-bottom: 1px solid var(--c-border);
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .ep-row {
+      display: flex; align-items: center; gap: var(--sp-4);
+      padding: var(--sp-4) var(--sp-5);
+      border-bottom: 1px solid var(--c-border);
+      transition: background var(--t-fast);
+    }
+
+    .ep-row:last-child { border-bottom: none; }
+    .ep-row:hover { background: rgba(255,255,255,0.02); }
+
+    .ep-num-badge {
+      width: 36px; height: 36px;
+      background: rgba(124,58,237,0.15);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 800; font-size: .875rem;
+      color: var(--c-accent2);
+      flex-shrink: 0;
+    }
+
+    .drive-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 10px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: var(--r-full);
+      font-size: .75rem; color: var(--c-info);
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="../admin/index.html" class="btn btn-ghost btn-sm">
+    <svg viewBox="0 0 24 24" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+    Panel Admin
+  </a>
+  <h1 style="font-family:var(--font-display);font-weight:700;font-size:1.125rem;" id="page-title">Gestor de Episodios</h1>
+  <div style="margin-left:auto;display:flex;gap:var(--sp-3);">
+    <button class="btn btn-primary btn-sm" id="add-season-btn">+ Temporada</button>
+  </div>
+</div>
+
+<!-- Anime info bar -->
+<div class="section-card" style="display:flex;align-items:center;gap:var(--sp-5);margin-bottom:var(--sp-6);">
+  <img id="anime-cover-sm" src="" alt="" style="width:60px;height:84px;object-fit:cover;border-radius:var(--r-md);background:var(--c-surface3);" />
+  <div>
+    <h2 id="anime-name" style="font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin-bottom:4px;">—</h2>
+    <p id="anime-info" class="text-muted text-sm">—</p>
+  </div>
+  <div style="margin-left:auto;text-align:right;">
+    <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;" id="total-eps">0</div>
+    <div class="text-xs text-faint">episodios totales</div>
+  </div>
+</div>
+
+<!-- Seasons & episodes -->
+<div id="seasons-container">
+  <p class="text-faint text-sm" style="text-align:center;padding:var(--sp-10) 0;">Cargando temporadas...</p>
+</div>
+
+<!-- Add season modal -->
+<div class="overlay" id="season-modal">
+  <div class="card-glass anim-scale-in" style="width:100%;max-width:420px;padding:var(--sp-8);">
+    <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.125rem;margin-bottom:var(--sp-5);">Agregar Temporada</h3>
+    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <div class="input-group">
+        <label class="input-label">Número de temporada</label>
+        <input type="number" class="input-field" id="season-number" value="1" min="1" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">Título de temporada (opcional)</label>
+        <input type="text" class="input-field" id="season-title" placeholder="Ej: La Marcha en las Sombras" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">Año</label>
+        <input type="number" class="input-field" id="season-year" placeholder="2024" />
+      </div>
+    </div>
+    <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-6);">
+      <button class="btn btn-ghost btn-full" onclick="document.getElementById('season-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="save-season-btn"><span class="btn-text">Guardar</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Add episode modal -->
+<div class="overlay" id="episode-modal">
+  <div class="card-glass anim-scale-in" style="width:100%;max-width:600px;padding:var(--sp-8);max-height:90vh;overflow-y:auto;">
+    <h3 style="font-family:var(--font-display);font-weight:700;font-size:1.125rem;margin-bottom:var(--sp-5);" id="ep-modal-title">Agregar Episodio</h3>
+
+    <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <div class="ep-form-grid">
+        <div class="input-group">
+          <label class="input-label">Número de episodio</label>
+          <input type="number" class="input-field" id="ep-number" value="1" min="1" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Duración (segundos)</label>
+          <input type="number" class="input-field" id="ep-duration" placeholder="1440" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Título del episodio</label>
+        <input type="text" class="input-field" id="ep-title" placeholder="Título del episodio" />
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Sinopsis</label>
+        <textarea class="input-field" id="ep-synopsis" rows="2" placeholder="Descripción corta del episodio..."></textarea>
+      </div>
+
+      <!-- Drive source -->
+      <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:var(--r-lg);padding:var(--sp-5);">
+        <h4 style="font-weight:700;font-size:.9rem;margin-bottom:var(--sp-4);color:var(--c-info);">
+          📁 Fuente de Video (Google Drive)
+        </h4>
+
+        <div class="input-group" style="margin-bottom:var(--sp-4);">
+          <label class="input-label">Cuenta de Drive</label>
+          <select class="input-field" id="ep-drive-select">
+            <option value="">Seleccionar Drive...</option>
+          </select>
+        </div>
+
+        <div class="input-group" style="margin-bottom:var(--sp-4);">
+          <label class="input-label">ID del archivo en Drive</label>
+          <input type="text" class="input-field" id="ep-drive-file-id" placeholder="Pega el ID del archivo aquí" />
+          <span class="text-xs text-faint" style="margin-top:4px;">
+            Obtén el ID del link: drive.google.com/file/d/<strong>ESTE_ID</strong>/view
+          </span>
+        </div>
+
+        <!-- Preview link -->
+        <div id="drive-preview-wrap" style="display:none;">
+          <label class="input-label" style="margin-bottom:var(--sp-2);">Vista previa</label>
+          <div style="aspect-ratio:16/9;border-radius:var(--r-lg);overflow:hidden;background:var(--c-surface3);">
+            <iframe id="drive-preview-iframe" src="" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" id="preview-drive-btn" style="margin-top:var(--sp-3);">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Vista previa
+        </button>
+      </div>
+
+      <!-- Alternative URL -->
+      <div class="input-group">
+        <label class="input-label">URL alternativa (opcional)</label>
+        <input type="url" class="input-field" id="ep-video-url" placeholder="https://... (si no usas Drive)" />
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Thumbnail (URL)</label>
+        <input type="url" class="input-field" id="ep-thumbnail" placeholder="https://..." />
+      </div>
+
+      <!-- Skip times -->
+      <div style="background:var(--c-surface2);border-radius:var(--r-lg);padding:var(--sp-4);">
+        <h4 style="font-weight:600;font-size:.875rem;margin-bottom:var(--sp-3);">⏭ Tiempos de salto</h4>
+        <div class="ep-form-grid">
+          <div class="input-group">
+            <label class="input-label">Inicio Opening (seg)</label>
+            <input type="number" class="input-field" id="ep-op-start" placeholder="0" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Fin Opening (seg)</label>
+            <input type="number" class="input-field" id="ep-op-end" placeholder="90" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Inicio Ending (seg)</label>
+            <input type="number" class="input-field" id="ep-ed-start" placeholder="1320" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Fin Ending (seg)</label>
+            <input type="number" class="input-field" id="ep-ed-end" placeholder="1440" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-6);">
+      <button class="btn btn-ghost btn-full" onclick="closeEpisodeModal()">Cancelar</button>
+      <button class="btn btn-primary btn-full" id="save-ep-btn"><span class="btn-text">Guardar episodio</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { auth, db } from '../assets/js/core/firebase.js';
+import { onAuthChange, getCurrentUserData } from '../assets/js/core/auth.js';
+import { showToast } from '../assets/js/components/toast.js';
+import {
+  collection, getDocs, getDoc, doc, addDoc, updateDoc,
+  deleteDoc, serverTimestamp, query, orderBy, increment
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // Path helper — works on localhost AND GitHub Pages
+  const ROOT = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? '/'
+    : '/AnimeX/';
+  const goTo = path => { window.location.href = ROOT + path; };
+
+const params  = new URLSearchParams(location.search);
+const animeId = params.get('id');
+let seasons   = [];
+let editingEpId    = null;
+let editingSeasonId = null;
+let currentSeasonId = null;
+let drives     = [];
+
+// ── Auth
+onAuthChange(async user => {
+  if (!user) { goTo('login.html'); return; }
+  const data = await getCurrentUserData();
+  if (!data || data.role !== 'admin') { goTo('login.html'); return; }
+  if (!animeId) { goTo('admin/index.html'); return; }
+
+  await Promise.all([loadAnime(), loadDrives()]);
+  await loadSeasons();
+});
+
+async function loadAnime() {
+  const snap = await getDoc(doc(db, 'animes', animeId));
+  if (!snap.exists()) return;
+  const a = snap.data();
+  document.getElementById('anime-name').textContent = a.title;
+  document.getElementById('anime-info').textContent = `${a.studio || ''} · ${a.year || ''} · ${a.status || ''}`;
+  document.getElementById('anime-cover-sm').src = a.cover || '';
+  document.getElementById('page-title').textContent = `Episodios — ${a.title}`;
+  document.title = `${a.title} — Admin`;
+}
+
+async function loadDrives() {
+  const snap = await getDocs(collection(db, 'drives'));
+  drives = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const sel = document.getElementById('ep-drive-select');
+  sel.innerHTML = '<option value="">Seleccionar Drive...</option>';
+  drives.forEach(dr => {
+    const opt = document.createElement('option');
+    opt.value = dr.id;
+    opt.textContent = `${dr.name} (${dr.usedGB || 0}/${dr.capacityGB || 15} GB)`;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadSeasons() {
+  const snap = await getDocs(query(collection(db, 'animes', animeId, 'seasons'), orderBy('number', 'asc')));
+  seasons = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderSeasons();
+}
+
+async function renderSeasons() {
+  const container = document.getElementById('seasons-container');
+  if (!seasons.length) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:var(--sp-10) 0;">
+        <p class="text-faint" style="margin-bottom:var(--sp-4);">Sin temporadas. Agrega la primera.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('add-season-btn').click()">+ Agregar temporada</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '';
+  let totalEps = 0;
+
+  for (const season of seasons) {
+    const epsSnap = await getDocs(
+      query(collection(db, 'animes', animeId, 'seasons', season.id, 'episodes'), orderBy('number', 'asc'))
+    );
+    const episodes = epsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    totalEps += episodes.length;
+
+    const block = document.createElement('div');
+    block.className = 'season-block';
+    block.innerHTML = `
+      <div class="season-block-header" onclick="toggleSeason('${season.id}')">
+        <div style="display:flex;align-items:center;gap:var(--sp-3);">
+          <span class="badge badge-accent">T${season.number}</span>
+          <span style="font-weight:700;">${season.title ? `Temporada ${season.number}: ${season.title}` : `Temporada ${season.number}`}</span>
+          ${season.year ? `<span class="text-xs text-faint">(${season.year})</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--sp-4);">
+          <span class="text-sm text-muted">${episodes.length} episodios</span>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openAddEpisode('${season.id}',${season.number})">
+            + Episodio
+          </button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();deleteSeason('${season.id}')" style="color:var(--c-error);">
+            <svg viewBox="0 0 24 24" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+          <svg viewBox="0 0 24 24" width="16" height="16" class="chevron-${season.id}" style="transition:transform .3s;color:var(--c-text-3)"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div id="season-body-${season.id}">
+        ${episodes.length === 0 ? `
+          <div style="padding:var(--sp-8);text-align:center;">
+            <p class="text-faint text-sm" style="margin-bottom:var(--sp-3);">Sin episodios en esta temporada</p>
+            <button class="btn btn-secondary btn-sm" onclick="openAddEpisode('${season.id}',${season.number})">+ Primer episodio</button>
+          </div>
+        ` : episodes.map(ep => `
+          <div class="ep-row" id="ep-${ep.id}">
+            <div class="ep-num-badge">${ep.number}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ep.title || `Episodio ${ep.number}`}</div>
+              <div style="display:flex;align-items:center;gap:var(--sp-3);margin-top:2px;">
+                ${ep.driveFileId ? `<span class="drive-chip">📁 ${ep.driveFileId.slice(0,12)}...</span>` : ''}
+                ${ep.duration ? `<span class="text-xs text-faint">${formatDur(ep.duration)}</span>` : ''}
+                ${ep.videoUrl && !ep.driveFileId ? `<span class="text-xs text-faint" style="color:var(--c-info);">URL externa</span>` : ''}
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--sp-2);">
+              <button class="btn btn-sm" style="background:rgba(245,158,11,0.12);color:var(--c-warning);" onclick="openEditEpisode('${season.id}','${ep.id}')">
+                <svg viewBox="0 0 24 24" width="13" height="13"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Editar
+              </button>
+              <button class="btn btn-sm" style="background:rgba(239,68,68,0.12);color:var(--c-error);" onclick="deleteEpisode('${season.id}','${ep.id}')">
+                <svg viewBox="0 0 24 24" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(block);
+  }
+
+  document.getElementById('total-eps').textContent = totalEps;
+}
+
+function formatDur(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// Toggle season collapse
+window.toggleSeason = function(id) {
+  const body    = document.getElementById(`season-body-${id}`);
+  const chevron = document.querySelector(`.chevron-${id}`);
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? '' : 'none';
+  chevron.style.transform = isHidden ? '' : 'rotate(-90deg)';
+};
+
+// ── Add season
+document.getElementById('add-season-btn').addEventListener('click', () => {
+  const nextNum = seasons.length ? Math.max(...seasons.map(s => s.number || 1)) + 1 : 1;
+  document.getElementById('season-number').value = nextNum;
+  document.getElementById('season-title').value = '';
+  document.getElementById('season-year').value = new Date().getFullYear();
+  document.getElementById('season-modal').classList.add('open');
+});
+
+document.getElementById('save-season-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-season-btn');
+  const num  = parseInt(document.getElementById('season-number').value) || 1;
+  const title = document.getElementById('season-title').value.trim();
+  const year  = parseInt(document.getElementById('season-year').value) || null;
+
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    await addDoc(collection(db, 'animes', animeId, 'seasons'), {
+      number: num, title, year, createdAt: serverTimestamp()
+    });
+    // Update anime season count
+    await updateDoc(doc(db, 'animes', animeId), { seasonCount: increment(1) });
+    showToast(`Temporada ${num} creada`, 'success');
+    document.getElementById('season-modal').classList.remove('open');
+    await loadSeasons();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+});
+
+window.deleteSeason = async function(seasonId) {
+  if (!confirm('¿Eliminar esta temporada y todos sus episodios?')) return;
+  const epsSnap = await getDocs(collection(db, 'animes', animeId, 'seasons', seasonId, 'episodes'));
+  for (const ep of epsSnap.docs) await deleteDoc(ep.ref);
+  await deleteDoc(doc(db, 'animes', animeId, 'seasons', seasonId));
+  await updateDoc(doc(db, 'animes', animeId), { seasonCount: increment(-1) });
+  showToast('Temporada eliminada', 'success');
+  await loadSeasons();
+};
+
+// ── Episode modal
+window.openAddEpisode = function(seasonId, seasonNum) {
+  editingEpId = null;
+  editingSeasonId = seasonId;
+  currentSeasonId = seasonId;
+
+  // Auto-number
+  const block = document.getElementById(`season-body-${seasonId}`);
+  const existingRows = block ? block.querySelectorAll('.ep-row').length : 0;
+  document.getElementById('ep-number').value = existingRows + 1;
+  document.getElementById('ep-title').value = '';
+  document.getElementById('ep-synopsis').value = '';
+  document.getElementById('ep-duration').value = '';
+  document.getElementById('ep-drive-file-id').value = '';
+  document.getElementById('ep-drive-select').value = '';
+  document.getElementById('ep-video-url').value = '';
+  document.getElementById('ep-thumbnail').value = '';
+  document.getElementById('ep-op-start').value = '';
+  document.getElementById('ep-op-end').value = '';
+  document.getElementById('ep-ed-start').value = '';
+  document.getElementById('ep-ed-end').value = '';
+  document.getElementById('drive-preview-wrap').style.display = 'none';
+  document.getElementById('ep-modal-title').textContent = `Agregar Episodio — Temporada ${seasonNum}`;
+  document.getElementById('episode-modal').classList.add('open');
+};
+
+window.openEditEpisode = async function(seasonId, epId) {
+  editingEpId = epId;
+  editingSeasonId = seasonId;
+  currentSeasonId = seasonId;
+
+  const snap = await getDoc(doc(db, 'animes', animeId, 'seasons', seasonId, 'episodes', epId));
+  if (!snap.exists()) return;
+  const ep = snap.data();
+
+  document.getElementById('ep-number').value = ep.number || 1;
+  document.getElementById('ep-title').value = ep.title || '';
+  document.getElementById('ep-synopsis').value = ep.synopsis || '';
+  document.getElementById('ep-duration').value = ep.duration || '';
+  document.getElementById('ep-drive-file-id').value = ep.driveFileId || '';
+  document.getElementById('ep-drive-select').value = ep.driveAccountId || '';
+  document.getElementById('ep-video-url').value = ep.videoUrl || '';
+  document.getElementById('ep-thumbnail').value = ep.thumbnail || '';
+  document.getElementById('ep-op-start').value = ep.opening?.start || '';
+  document.getElementById('ep-op-end').value = ep.opening?.end || '';
+  document.getElementById('ep-ed-start').value = ep.ending?.start || '';
+  document.getElementById('ep-ed-end').value = ep.ending?.end || '';
+
+  if (ep.driveFileId) {
+    document.getElementById('drive-preview-iframe').src = `https://drive.google.com/file/d/${ep.driveFileId}/preview`;
+    document.getElementById('drive-preview-wrap').style.display = '';
+  }
+
+  document.getElementById('ep-modal-title').textContent = `Editar Episodio ${ep.number}`;
+  document.getElementById('episode-modal').classList.add('open');
+};
+
+window.closeEpisodeModal = function() {
+  document.getElementById('episode-modal').classList.remove('open');
+  document.getElementById('drive-preview-iframe').src = '';
+};
+
+// Drive preview
+document.getElementById('preview-drive-btn').addEventListener('click', () => {
+  const fileId = document.getElementById('ep-drive-file-id').value.trim();
+  if (!fileId) { showToast('Ingresa el ID del archivo', 'warning'); return; }
+  document.getElementById('drive-preview-iframe').src = `https://drive.google.com/file/d/${fileId}/preview`;
+  document.getElementById('drive-preview-wrap').style.display = '';
+});
+
+// Save episode
+document.getElementById('save-ep-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-ep-btn');
+  const number      = parseInt(document.getElementById('ep-number').value) || 1;
+  const title       = document.getElementById('ep-title').value.trim();
+  const synopsis    = document.getElementById('ep-synopsis').value.trim();
+  const duration    = parseInt(document.getElementById('ep-duration').value) || null;
+  const driveFileId = document.getElementById('ep-drive-file-id').value.trim();
+  const driveAccountId = document.getElementById('ep-drive-select').value;
+  const videoUrl    = document.getElementById('ep-video-url').value.trim();
+  const thumbnail   = document.getElementById('ep-thumbnail').value.trim();
+  const opStart     = parseInt(document.getElementById('ep-op-start').value) || null;
+  const opEnd       = parseInt(document.getElementById('ep-op-end').value) || null;
+  const edStart     = parseInt(document.getElementById('ep-ed-start').value) || null;
+  const edEnd       = parseInt(document.getElementById('ep-ed-end').value) || null;
+
+  if (!driveFileId && !videoUrl) {
+    showToast('Ingresa el ID de Drive o URL del video', 'warning');
+    return;
+  }
+
+  btn.classList.add('loading'); btn.disabled = true;
+
+  try {
+    const data = {
+      number, title, synopsis, duration,
+      driveFileId: driveFileId || null,
+      driveAccountId: driveAccountId || null,
+      videoUrl: videoUrl || null,
+      thumbnail: thumbnail || null,
+      opening: opStart ? { start: opStart, end: opEnd } : null,
+      ending: edStart ? { start: edStart, end: edEnd } : null,
+      updatedAt: serverTimestamp(),
+    };
+
+    if (editingEpId) {
+      await updateDoc(doc(db, 'animes', animeId, 'seasons', editingSeasonId, 'episodes', editingEpId), data);
+      showToast('Episodio actualizado', 'success');
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db, 'animes', animeId, 'seasons', editingSeasonId, 'episodes'), data);
+
+      // Update anime episode count + drive video count
+      await updateDoc(doc(db, 'animes', animeId), { episodeCount: increment(1) });
+      if (driveAccountId) {
+        await updateDoc(doc(db, 'drives', driveAccountId), { videoCount: increment(1) });
+      }
+      showToast('Episodio agregado', 'success');
+    }
+
+    closeEpisodeModal();
+    await loadSeasons();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+});
+
+window.deleteEpisode = async function(seasonId, epId) {
+  if (!confirm('¿Eliminar este episodio?')) return;
+  const snap = await getDoc(doc(db, 'animes', animeId, 'seasons', seasonId, 'episodes', epId));
+  const driveId = snap.data()?.driveAccountId;
+
+  await deleteDoc(doc(db, 'animes', animeId, 'seasons', seasonId, 'episodes', epId));
+  await updateDoc(doc(db, 'animes', animeId), { episodeCount: increment(-1) });
+  if (driveId) await updateDoc(doc(db, 'drives', driveId), { videoCount: increment(-1) });
+
+  showToast('Episodio eliminado', 'success');
+  await loadSeasons();
+};
+
+// Close modals on backdrop click
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
